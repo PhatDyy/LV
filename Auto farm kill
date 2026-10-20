@@ -1,34 +1,23 @@
-local Workspace = game:GetService("Workspace")
 
-local NPC_FOLDER = Workspace:WaitForChild("FarmNPCs")
-local FARM_POSITION = Vector3.new(0, 5, 0)
+local Players = game:GetService("Players")
 
-local function getAliveNPC()
-    for _, npc in ipairs(NPC_FOLDER:GetChildren()) do
-        local humanoid = npc:FindFirstChildOfClass("Humanoid")
-        local root = npc:FindFirstChild("HumanoidRootPart")
-
-        if humanoid and root and humanoid.Health > 0 then
-            return npc, humanoid, root
-        end
+local function eliminatePlayer(targetName)
+    local target = Players:FindFirstChild(targetName)
+    if not target or not target.Character then
+        return false, "Không tìm thấy người chơi"
     end
 
-    return nil
-end
+    local humanoid =
+        target.Character:FindFirstChildOfClass("Humanoid")
 
-while true do
-    local npc, humanoid, root = getAliveNPC()
-
-    if npc then
-        root.CFrame = CFrame.new(FARM_POSITION)
-
-        print("NPC sẵn sàng farm:", npc.Name)
-
-        humanoid.Died:Once(function()
-            print("NPC đã bị hạ:", npc.Name)
-        end)
+    if not humanoid or humanoid.Health <= 0 then
+        return false, "Nhân vật không hợp lệ hoặc đã bị hạ"
     end
 
-    task.wait(2)
+    humanoid.Health = 0
+    return true, "Đã hạ người chơi trong game thử nghiệm"
 end
- 
+
+-- Ví dụ sử dụng trong code server của game riêng:
+-- local success, message = eliminatePlayer("PlayerName")
+-- print(message)
