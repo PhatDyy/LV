@@ -1,1 +1,125 @@
-4667
+--[[
+    Project: Blox Fruits Automation Suite
+    Author: MrDon
+    Description: Modular framework handling Auto Farm Level, Mastery, and core game systems.
+]]--
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
+local LocalPlayer = Players.LocalPlayer
+
+-- Configuration & State
+getgenv().BloxConfig = {
+    AutoFarmLevel = false,
+    AutoFarmMastery = false,
+    SelectedWeapon = "Melee",
+    BountyHunter = false,
+    AutoRaid = false,
+    AutoSeaEvents = false,
+    AutoChest = false,
+    SafeHpThreshold = 35
+}
+
+local Config = getgenv().BloxConfig
+
+-- Anti-AFK bypass
+LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+-- Utility Functions
+local function GetClosestMob(questName)
+    local targetMob = nil
+    local shortestDist = math.huge
+    
+    for _, mob in ipairs(workspace.Enemies:GetChildren()) do
+        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+            if mob.Name:find(questName) then
+                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - mob.HumanoidRootPart.Position).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    targetMob = mob
+                end
+            end
+        end
+    end
+    return targetMob
+end
+
+local function EquipWeapon(weaponType)
+    local backpack = LocalPlayer.Backpack
+    for _, tool in ipairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            if weaponType == "Melee" and tool.ToolTip == "Melee" then
+                LocalPlayer.Character.Humanoid:EquipTool(tool)
+                break
+            elseif weaponType == "Sword" and tool.ToolTip == "Sword" then
+                LocalPlayer.Character.Humanoid:EquipTool(tool)
+                break
+            elseif weaponType == "Blox Fruit" and tool.ToolTip == "Blox Fruit" then
+                LocalPlayer.Character.Humanoid:EquipTool(tool)
+                break
+            end
+        end
+    end
+end
+
+-- Core Modules
+local CoreAutomation = {}
+
+function CoreAutomation.AutoFarmLevelLoop()
+    task.spawn(function()
+        while task.spawn do
+            if Config.AutoFarmLevel then
+                pcall(function()
+                    -- Placeholder quest level logic matching current player level
+                    local questName = "Bandit" -- Dynamically adjust based on Level data
+                    local mob = GetClosestMob(questName)
+                    
+                    if mob and mob:FindFirstChild("HumanoidRootPart") then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 35, 0)
+                        EquipWeapon(Config.SelectedWeapon)
+                        
+                        -- Attack simulation
+                        if LocalPlayer.Character:FindFirstChildOfClass("Tool") then
+                            LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+                            VirtualUser:Button1Down(Vector2.new(0,0))
+                        end
+                    end
+                end)
+            end
+            task.wait(0.1)
+        end
+    end)
+end
+
+function CoreAutomation.AutoFarmMasteryLoop()
+    task.spawn(function()
+        while task.spawn do
+            if Config.AutoFarmMastery then
+                pcall(function()
+                    -- Lowers enemy health to threshold before finishing for mastery efficiency
+                    for _, mob in ipairs(workspace.Enemies:GetChildren()) do
+                        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                            if mob.Humanoid.Health > (mob.Humanoid.MaxHealth * 0.1) then
+                                LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0)
+                                EquipWeapon(Config.SelectedWeapon)
+                                VirtualUser:Button1Down(Vector2.new(0,0))
+                            end
+                        end
+                    end
+                end)
+            end
+            task.wait(0.1)
+        end
+    end)
+end
+
+-- Initialize Loops
+CoreAutomation.AutoFarmLevelLoop()
+CoreAutomation.AutoFarmMasteryLoop()
+
+print("MrDon: Blox Fruits Framework Initialized Successfully.")
+
