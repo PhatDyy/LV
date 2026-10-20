@@ -1,82 +1,55 @@
 local Players = game:GetService("Players")
-local DataStoreService = game:GetService("DataStoreService")
 
-local banStore = DataStoreService:GetDataStore("AdminBans_v1")
+local MAX_RANGE = 150
 
--- Thay bằng UserId thật của admin. Không ai khác có quyền, kể cả khi đoán được lệnh.
-local ADMINS = {
-	[1] = true,
-}
-local PREFIX = ":"
+local function getValidTarget(
+    shooter,
+    targetCharacter
+)
+    if not targetCharacter then
+        return nil
+    end
 
-local function findPlayer(partial)
-	partial = partial:lower()
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p.Name:lower():sub(1, #partial) == partial then
-			return p
-		end
-	end
+    local shooterCharacter = shooter.Character
+    if not shooterCharacter then
+        return nil
+    end
+
+    local shooterRoot =
+        shooterCharacter:FindFirstChild("HumanoidRootPart")
+
+    local targetRoot =
+        targetCharacter:FindFirstChild("HumanoidRootPart")
+
+    local targetHumanoid =
+        targetCharacter:FindFirstChildOfClass("Humanoid")
+
+    if not shooterRoot
+        or not targetRoot
+        or not targetHumanoid
+        or targetHumanoid.Health <= 0 then
+        return nil
+    end
+
+    if targetCharacter == shooterCharacter then
+        return nil
+    end
+
+    local targetPlayer =
+        Players:GetPlayerFromCharacter(targetCharacter)
+
+    if targetPlayer and targetPlayer == shooter then
+        return nil
+    end
+
+    local distance =
+        (targetRoot.Position - shooterRoot.Position).Magnitude
+
+    if distance > MAX_RANGE then
+        return nil
+    end
+
+    return targetRoot
 end
 
-local commands = {}
-
-commands.kick = function(admin, args)
-	local target = args[1] and findPlayer(args[1])
-	if target then
-		target:Kick(table.concat(args, " ", 2) ~= "" and table.concat(args, " ", 2) or "Bị kick bởi admin")
-	end
-end
-
-commands.ban = function(admin, args)
-	local target = args[1] and findPlayer(args[1])
-	if not target then return end
-	local reason = table.concat(args, " ", 2)
-	local ok, err = pcall(function()
-		banStore:SetAsync(tostring(target.UserId), { reason = reason ~= "" and reason or "Vi phạm luật", by = admin.UserId })
-	end)
-	if not ok then warn("Ban save failed:", err) end
-	target:Kick("Bạn đã bị ban: " .. reason)
-end
-
-commands.tp = function(admin, args)
-	local target = args[1] and findPlayer(args[1])
-	local a, t = admin.Character, target and target.Character
-	if a and t and a:FindFirstChild("HumanoidRootPart") and t:FindFirstChild("HumanoidRootPart") then
-		a.HumanoidRootPart.CFrame = t.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
-	end
-end
-
-commands.heal = function(admin, args)
-	local target = args[1] and findPlayer(args[1]) or admin
-	local hum = target.Character and target.Character:FindFirstChildOfClass("Humanoid")
-	if hum then hum.Health = hum.MaxHealth end
-end
-
-commands.speed = function(admin, args)
-	local value = tonumber(args[1])
-	local hum = admin.Character and admin.Character:FindFirstChildOfClass("Humanoid")
-	if hum and value then hum.WalkSpeed = math.clamp(value, 0, 100) end
-end
-
--- Kiểm tra ban khi vào game
-Players.PlayerAdded:Connect(function(player)
-	local ok, data = pcall(function()
-		return banStore:GetAsync(tostring(player.UserId))
-	end)
-	if ok and data then
-		player:Kick("Bạn đã bị ban: " .. tostring(data.reason))
-		return
-	end
-
-	player.Chatted:Connect(function(msg)
-		if not ADMINS[player.UserId] then return end
-		if msg:sub(1, #PREFIX) ~= PREFIX then return end
-		local parts = msg:sub(#PREFIX + 1):split(" ")
-		local cmd = table.remove(parts, 1)
-		local handler = cmd and commands[cmd:lower()]
-		if handler then
-			local success, err = pcall(handler, player, parts)
-			if not success then warn("Command error:", err) end
-		end
-	end)
-end)
+-- Gọi getValidTarget(player, targetCharacter)
