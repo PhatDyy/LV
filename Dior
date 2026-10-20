@@ -1,17 +1,56 @@
 --[[
-    Project: GitHub Raw Script Loader
-    Target Link: https://raw.githubusercontent.com/PhatDyy/LV/refs/heads/main/Dior
+    Project: The Strongest Battlegrounds (TSB) - Louis Vuitton Hub
     Author: MrDon
+    Feature: Full Menu UI (Orion Library)
 ]]--
 
-local scriptUrl = "https://raw.githubusercontent.com/PhatDyy/LV/refs/heads/main/Dior"
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Louis Vuitton Hub | TSB", HidePremium = false, SaveConfig = true, ConfigFolder = "LVConfig"})
 
-local success, err = pcall(function()
-    loadstring(game:HttpGet(scriptUrl))()
-end)
+-- Global Config
+getgenv().TSBConfig = {
+    AutoDash = false,
+    SilentAim = false,
+    AimFOV = 120
+}
 
-if success then
-    print("MrDon: Loaded script successfully from GitHub.")
-else
-    warn("MrDon: Failed to load script. Error: " .. tostring(err))
-end
+local Config = getgenv().TSBConfig
+
+-- Tab Main
+local MainTab = Window:MakeTab({
+    Name = "Main Features",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+MainTab:AddToggle({
+    Name = "Silent Aim",
+    Default = false,
+    Callback = function(Value)
+        Config.SilentAim = Value
+    end    
+})
+
+MainTab:AddToggle({
+    Name = "Auto Dash Tech",
+    Default = false,
+    Callback = function(Value)
+        Config.AutoDash = Value
+    end    
+})
+
+MainTab:AddSlider({
+    Name = "Aim FOV",
+    Min = 50,
+    Max = 300,
+    Default = 120,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 5,
+    ValueName = "FOV",
+    Callback = function(Value)
+        Config.AimFOV = Value
+    end    
+})
+
+OrionLib:Init()
+print("MrDon: UI Loaded Successfully.")
