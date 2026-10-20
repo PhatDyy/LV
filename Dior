@@ -1,55 +1,68 @@
+-- Steal an Egg - Demo GUI
+-- Dùng trong Roblox Studio
+-- Đặt LocalScript vào StarterPlayerScripts
+
 local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-local MAX_RANGE = 150
+local gui = Instance.new("ScreenGui")
+gui.Name = "EggControl"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
-local function getValidTarget(
-    shooter,
-    targetCharacter
-)
-    if not targetCharacter then
-        return nil
-    end
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 230, 0, 300)
+frame.Position = UDim2.new(0.05, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+frame.Parent = gui
 
-    local shooterCharacter = shooter.Character
-    if not shooterCharacter then
-        return nil
-    end
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
 
-    local shooterRoot =
-        shooterCharacter:FindFirstChild("HumanoidRootPart")
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 45)
+title.BackgroundTransparency = 1
+title.Text = "🥚 STEAL AN EGG"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Parent = frame
 
-    local targetRoot =
-        targetCharacter:FindFirstChild("HumanoidRootPart")
+local features = {
+    "Egg ESP",
+    "Auto Collect",
+    "Auto Farm",
+    "Player ESP",
+    "Speed",
+    "Admin Panel"
+}
 
-    local targetHumanoid =
-        targetCharacter:FindFirstChildOfClass("Humanoid")
+local enabled = {}
 
-    if not shooterRoot
-        or not targetRoot
-        or not targetHumanoid
-        or targetHumanoid.Health <= 0 then
-        return nil
-    end
+for i, name in ipairs(features) do
+    enabled[name] = false
 
-    if targetCharacter == shooterCharacter then
-        return nil
-    end
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0.88, 0, 0, 32)
+    button.Position = UDim2.new(0.06, 0, 0, 48 + (i-1)*39)
+    button.BackgroundColor3 = Color3.fromRGB(55, 55, 75)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.TextScaled = true
+    button.Text = name .. ": OFF"
+    button.Parent = frame
 
-    local targetPlayer =
-        Players:GetPlayerFromCharacter(targetCharacter)
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 7)
+    buttonCorner.Parent = button
 
-    if targetPlayer and targetPlayer == shooter then
-        return nil
-    end
+    button.Activated:Connect(function()
+        enabled[name] = not enabled[name]
+        button.Text = name .. (enabled[name] and ": ON" or ": OFF")
+        button.BackgroundColor3 = enabled[name]
+            and Color3.fromRGB(30, 130, 80)
+            or Color3.fromRGB(55, 55, 75)
 
-    local distance =
-        (targetRoot.Position - shooterRoot.Position).Magnitude
-
-    if distance > MAX_RANGE then
-        return nil
-    end
-
-    return targetRoot
+        print(name, enabled[name] and "ENABLED" or "DISABLED")
+    end)
 end
 
--- Gọi getValidTarget(player, targetCharacter)
