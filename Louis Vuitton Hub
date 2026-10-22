@@ -1,125 +1,565 @@
---[[
-    Project: Blox Fruits Automation Suite
-    Author: MrDon
-    Description: Modular framework handling Auto Farm Level, Mastery, and core game systems.
-]]--
+-- BananaUpgrade.lua
+-- Banana-style GUI for your own Roblox experience
+-- Place in StarterPlayerScripts as a LocalScript
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local VirtualUser = game:GetService("VirtualUser")
-local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
--- Configuration & State
-getgenv().BloxConfig = {
-    AutoFarmLevel = false,
-    AutoFarmMastery = false,
-    SelectedWeapon = "Melee",
-    BountyHunter = false,
-    AutoRaid = false,
-    AutoSeaEvents = false,
-    AutoChest = false,
-    SafeHpThreshold = 35
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local old = playerGui:FindFirstChild("BananaUpgrade")
+if old then old:Destroy() end
+
+local theme = {
+    bg = Color3.fromRGB(18, 20, 28),
+    panel = Color3.fromRGB(29, 32, 43),
+    card = Color3.fromRGB(40, 44, 57),
+    yellow = Color3.fromRGB(255, 207, 55),
+    white = Color3.fromRGB(245, 245, 250),
+    gray = Color3.fromRGB(165, 170, 185),
+    green = Color3.fromRGB(60, 195, 120),
 }
 
-local Config = getgenv().BloxConfig
+local gui = Instance.new("ScreenGui")
+gui.Name = "BananaUpgrade"
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
 
--- Anti-AFK bypass
-LocalPlayer.Idled:Connect(function()
-    VirtualUser:CaptureController()
-    VirtualUser:ClickButton2(Vector2.new())
+local function create(class, props, parent)
+    local obj = Instance.new(class)
+    for k, v in pairs(props or {}) do
+        obj[k] = v
+    end
+    obj.Parent = parent
+    return obj
+end
+
+local function round(obj, radius)
+    create("UICorner", {
+        CornerRadius = UDim.new(0, radius or 8)
+    }, obj)
+end
+
+local function animate(obj, props)
+    TweenService:Create(obj, TweenInfo.new(0.18), props):Play()
+end
+
+local main = create("Frame", {
+    Name = "Main",
+    Size = UDim2.new(0, 540, 0, 410),
+    Position = UDim2.new(0.5, -270, 0.5, -205),
+    BackgroundColor3 = theme.bg,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+}, gui)
+round(main, 14)
+
+create("UIStroke", {
+    Color = theme.yellow,
+    Thickness = 1.5,
+}, main)
+
+local header = create("Frame", {
+    Size = UDim2.new(1, 0, 0, 48),
+    BackgroundColor3 = theme.panel,
+    BorderSizePixel = 0,
+}, main)
+round(header, 12)
+
+create("TextLabel", {
+    Position = UDim2.fromOffset(14, 0),
+    Size = UDim2.new(1, -110, 1, 0),
+    BackgroundTransparency = 1,
+    Text = "BANANA UPGRADE",
+    TextColor3 = theme.yellow,
+    Font = Enum.Font.GothamBold,
+    TextSize = 19,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, header)
+
+local function button(parent, text, size, pos, color)
+    local b = create("TextButton", {
+        Size = size,
+        Position = pos,
+        BackgroundColor3 = color or theme.card,
+        Text = text,
+        TextColor3 = theme.white,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        AutoButtonColor = true,
+    }, parent)
+    round(b, 7)
+    return b
+end
+
+local close = button(
+    header, "X",
+    UDim2.fromOffset(32, 30),
+    UDim2.new(1, -40, 0, 9),
+    Color3.fromRGB(190, 55, 65)
+)
+close.Activated:Connect(function()
+    gui:Destroy()
 end)
 
--- Utility Functions
-local function GetClosestMob(questName)
-    local targetMob = nil
-    local shortestDist = math.huge
-    
-    for _, mob in ipairs(workspace.Enemies:GetChildren()) do
-        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
-            if mob.Name:find(questName) then
-                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - mob.HumanoidRootPart.Position).Magnitude
-                if dist < shortestDist then
-                    shortestDist = dist
-                    targetMob = mob
-                end
-            end
+local minimize = button(
+    header, "-",
+    UDim2.fromOffset(32, 30),
+    UDim2.new(1, -77, 0, 9)
+)
+
+local sidebar = create("Frame", {
+    Position = UDim2.fromOffset(9, 57),
+    Size = UDim2.new(0, 132, 1, -66),
+    BackgroundColor3 = theme.panel,
+    BorderSizePixel = 0,
+}, main)
+round(sidebar, 9)
+
+local navLayout = create("UIListLayout", {
+    Padding = UDim.new(0, 5),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+}, sidebar)
+
+create("UIPadding", {
+    PaddingTop = UDim.new(0, 8),
+    PaddingLeft = UDim.new(0, 7),
+    PaddingRight = UDim.new(0, 7),
+}, sidebar)
+
+local area = create("Frame", {
+    Position = UDim2.fromOffset(150, 57),
+    Size = UDim2.new(1, -159, 1, -66),
+    BackgroundTransparency = 1,
+}, main)
+
+local search = create("TextBox", {
+    Size = UDim2.new(1, 0, 0, 34),
+    BackgroundColor3 = theme.panel,
+    PlaceholderText = "Search features...",
+    PlaceholderColor3 = theme.gray,
+    Text = "",
+    TextColor3 = theme.white,
+    Font = Enum.Font.Gotham,
+    TextSize = 13,
+    ClearTextOnFocus = false,
+}, area)
+round(search, 8)
+
+local page = create("ScrollingFrame", {
+    Position = UDim2.fromOffset(0, 41),
+    Size = UDim2.new(1, 0, 1, -41),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 3,
+    ScrollBarImageColor3 = theme.yellow,
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    CanvasSize = UDim2.new(),
+}, area)
+
+local list = create("UIListLayout", {
+    Padding = UDim.new(0, 7),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+}, page)
+
+create("UIPadding", {
+    PaddingBottom = UDim.new(0, 8),
+    PaddingRight = UDim.new(0, 3),
+}, page)
+
+local function clearPage()
+    for _, obj in ipairs(page:GetChildren()) do
+        if obj:IsA("GuiObject") and obj ~= list then
+            obj:Destroy()
         end
     end
-    return targetMob
 end
 
-local function EquipWeapon(weaponType)
-    local backpack = LocalPlayer.Backpack
-    for _, tool in ipairs(backpack:GetChildren()) do
-        if tool:IsA("Tool") then
-            if weaponType == "Melee" and tool.ToolTip == "Melee" then
-                LocalPlayer.Character.Humanoid:EquipTool(tool)
-                break
-            elseif weaponType == "Sword" and tool.ToolTip == "Sword" then
-                LocalPlayer.Character.Humanoid:EquipTool(tool)
-                break
-            elseif weaponType == "Blox Fruit" and tool.ToolTip == "Blox Fruit" then
-                LocalPlayer.Character.Humanoid:EquipTool(tool)
-                break
-            end
-        end
+local function heading(text)
+    local label = create("TextLabel", {
+        Size = UDim2.new(1, -3, 0, 25),
+        BackgroundTransparency = 1,
+        Text = string.upper(text),
+        TextColor3 = theme.yellow,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, page)
+    label:SetAttribute("SearchText", text:lower())
+end
+
+local function addCard(name, desc)
+    local frame = create("Frame", {
+        Size = UDim2.new(1, -3, 0, desc and 59 or 45),
+        BackgroundColor3 = theme.card,
+        BorderSizePixel = 0,
+    }, page)
+    round(frame, 8)
+
+    create("TextLabel", {
+        Position = UDim2.fromOffset(10, desc and 5 or 0),
+        Size = UDim2.new(1, -95, 0, 25),
+        BackgroundTransparency = 1,
+        Text = name,
+        TextColor3 = theme.white,
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, frame)
+
+    if desc then
+        create("TextLabel", {
+            Position = UDim2.fromOffset(10, 29),
+            Size = UDim2.new(1, -16, 0, 22),
+            BackgroundTransparency = 1,
+            Text = desc,
+            TextColor3 = theme.gray,
+            Font = Enum.Font.Gotham,
+            TextSize = 10,
+            TextXAlignment = Enum.TextXAlignment.Left,
+        }, frame)
     end
+
+    frame:SetAttribute("SearchText", (name .. " " .. (desc or "")):lower())
+    return frame
 end
 
--- Core Modules
-local CoreAutomation = {}
+local function addToggle(name, initial, callback, desc)
+    local frame = addCard(name, desc)
+    local enabled = initial == true
 
-function CoreAutomation.AutoFarmLevelLoop()
-    task.spawn(function()
-        while task.spawn do
-            if Config.AutoFarmLevel then
-                pcall(function()
-                    -- Placeholder quest level logic matching current player level
-                    local questName = "Bandit" -- Dynamically adjust based on Level data
-                    local mob = GetClosestMob(questName)
-                    
-                    if mob and mob:FindFirstChild("HumanoidRootPart") then
-                        LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 35, 0)
-                        EquipWeapon(Config.SelectedWeapon)
-                        
-                        -- Attack simulation
-                        if LocalPlayer.Character:FindFirstChildOfClass("Tool") then
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
-                            VirtualUser:Button1Down(Vector2.new(0,0))
-                        end
-                    end
-                end)
-            end
-            task.wait(0.1)
+    local b = button(
+        frame,
+        enabled and "ON" or "OFF",
+        UDim2.fromOffset(48, 27),
+        UDim2.new(1, -55, 0.5, -13),
+        enabled and theme.green or theme.panel
+    )
+
+    b.Activated:Connect(function()
+        enabled = not enabled
+        b.Text = enabled and "ON" or "OFF"
+        animate(b, {
+            BackgroundColor3 = enabled and theme.green or theme.panel
+        })
+        if callback then
+            callback(enabled)
         end
     end)
 end
 
-function CoreAutomation.AutoFarmMasteryLoop()
-    task.spawn(function()
-        while task.spawn do
-            if Config.AutoFarmMastery then
-                pcall(function()
-                    -- Lowers enemy health to threshold before finishing for mastery efficiency
-                    for _, mob in ipairs(workspace.Enemies:GetChildren()) do
-                        if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
-                            if mob.Humanoid.Health > (mob.Humanoid.MaxHealth * 0.1) then
-                                LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0)
-                                EquipWeapon(Config.SelectedWeapon)
-                                VirtualUser:Button1Down(Vector2.new(0,0))
-                            end
-                        end
-                    end
-                end)
+local function addAction(name, callback, desc)
+    local frame = addCard(name, desc)
+    local b = button(
+        frame, "RUN",
+        UDim2.fromOffset(48, 27),
+        UDim2.new(1, -55, 0.5, -13),
+        theme.yellow
+    )
+    b.TextColor3 = theme.bg
+
+    b.Activated:Connect(function()
+        local ok, err = pcall(callback or function() end)
+        if not ok then warn(err) end
+        animate(b, {BackgroundColor3 = theme.green})
+        task.delay(0.3, function()
+            if b.Parent then
+                animate(b, {BackgroundColor3 = theme.yellow})
             end
-            task.wait(0.1)
+        end)
+    end)
+end
+
+local function addSlider(name, minValue, maxValue, initial, callback)
+    local frame = addCard(name)
+    frame.Size = UDim2.new(1, -3, 0, 70)
+
+    local valueLabel = create("TextLabel", {
+        Position = UDim2.new(1, -65, 0, 3),
+        Size = UDim2.fromOffset(55, 22),
+        BackgroundTransparency = 1,
+        Text = tostring(initial),
+        TextColor3 = theme.yellow,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+    }, frame)
+
+    local track = create("Frame", {
+        Position = UDim2.new(0, 10, 0, 43),
+        Size = UDim2.new(1, -20, 0, 7),
+        BackgroundColor3 = theme.panel,
+        BorderSizePixel = 0,
+    }, frame)
+    round(track, 5)
+
+    local ratio = (initial - minValue) / (maxValue - minValue)
+    local fill = create("Frame", {
+        Size = UDim2.new(ratio, 0, 1, 0),
+        BackgroundColor3 = theme.yellow,
+        BorderSizePixel = 0,
+    }, track)
+    round(fill, 5)
+
+    local knob = create("TextButton", {
+        Position = UDim2.new(ratio, -8, 0.5, -8),
+        Size = UDim2.fromOffset(16, 16),
+        BackgroundColor3 = theme.white,
+        Text = "",
+    }, track)
+    round(knob, 10)
+
+    local function setValue(value)
+        value = math.clamp(
+            math.floor(value + 0.5), minValue, maxValue
+        )
+        ratio = (value - minValue) / (maxValue - minValue)
+        valueLabel.Text = tostring(value)
+        fill.Size = UDim2.new(ratio, 0, 1, 0)
+        knob.Position = UDim2.new(ratio, -8, 0.5, -8)
+        if callback then callback(value) end
+    end
+
+    local function move(input)
+        local width = math.max(track.AbsoluteSize.X, 1)
+        local x = math.clamp(
+            (input.Position.X - track.AbsolutePosition.X) / width,
+            0, 1
+        )
+        setValue(minValue + x * (maxValue - minValue))
+    end
+
+    knob.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch
+            or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            move(input)
+        end
+    end)
+
+    track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch
+            or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            move(input)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch
+            or input.UserInputType == Enum.UserInputType.MouseMovement then
+            if UserInputService:IsMouseButtonPressed(
+                Enum.UserInputType.MouseButton1
+            ) then
+                move(input)
+            end
         end
     end)
 end
 
--- Initialize Loops
-CoreAutomation.AutoFarmLevelLoop()
-CoreAutomation.AutoFarmMasteryLoop()
+local function render(tab)
+    clearPage()
 
-print("MrDon: Blox Fruits Framework Initialized Successfully.")
+    if tab == "Home" then
+        heading("Dashboard")
+        addCard("Welcome", "Banana Upgrade GUI")
+        addCard("Player", player.Name)
+        addCard("Platform", "Touch / Keyboard supported")
+        addAction("Refresh dashboard", function()
+            render("Home")
+        end, "Refresh this page")
 
+    elseif tab == "Player" then
+        heading("Character settings")
+        addSlider("WalkSpeed", 8, 32, 16, function(value)
+            -- Display/test value only; apply on your own game's
+            -- server-authorized character controller.
+            player:SetAttribute("UITestWalkSpeed", value)
+        end)
+        addSlider("JumpPower", 20, 100, 50, function(value)
+            player:SetAttribute("UITestJumpPower", value)
+        end)
+        addAction("Reset character", function()
+            player:LoadCharacter()
+        end, "Respawn your character")
+
+    elseif tab == "Visuals" then
+        heading("Visual settings")
+        addToggle("Show FPS counter", true, function(enabled)
+            state.showFPS = enabled
+        end)
+        addToggle("Highlight test objects", false, function(enabled)
+            state.highlights = enabled
+        end, "Toggle visual demo state")
+        addToggle("Lighting blur", false, function(enabled)
+            local blur = game.Lighting:FindFirstChild("BananaBlur")
+            if enabled and not blur then
+                blur = Instance.new("BlurEffect")
+                blur.Name = "BananaBlur"
+                blur.Size = 5
+                blur.Parent = Lighting
+            elseif not enabled and blur then
+                blur:Destroy()
+            end
+        end)
+
+    elseif tab == "Teleport" then
+        heading("Position tools")
+        addAction("Save position", function()
+            local char = player.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if root then
+                state.savedPosition = root.CFrame
+            end
+        end, "Save your current position")
+        addAction("Return to saved position", function()
+            local char = player.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if root and state.savedPosition then
+                root.CFrame = state.savedPosition
+            end
+        end, "Local demo for your own game")
+
+    elseif tab == "Training" then
+        heading("Training tools")
+        addCard("Damage test", "Connect to your own test dummy")
+        addCard("Quest test", "Connect to your own quest system")
+        addCard("Fruit test", "Connect to your own inventory system")
+        addAction("Reset test counters", function()
+            player:SetAttribute("TestDamage", 0)
+            player:SetAttribute("TestXP", 0)
+        end)
+
+    elseif tab == "Settings" then
+        heading("Interface settings")
+        addToggle("Compact mode", state.compact, function(enabled)
+            state.compact = enabled
+            main.Size = enabled
+                and UDim2.fromOffset(540, 65)
+                or UDim2.fromOffset(540, 410)
+            sidebar.Visible = not enabled
+            area.Visible = not enabled
+        end)
+        addToggle("Dark theme", true, function(enabled)
+            state.dark = enabled
+            main.BackgroundColor3 = enabled
+                and theme.bg
+                or Color3.fromRGB(235, 238, 245)
+            if not enabled then
+                title.TextColor3 = Color3.fromRGB(150, 100, 0)
+            else
+                title.TextColor3 = theme.yellow
+            end
+        end)
+        addAction("Reset UI", function()
+            main.Position = UDim2.new(0.5, -270, 0.5, -205)
+            main.Size = UDim2.fromOffset(540, 410)
+            sidebar.Visible = true
+            area.Visible = true
+            state.compact = false
+        end)
+    end
+
+    local query = search.Text:lower()
+    for _, obj in ipairs(page:GetChildren()) do
+        if obj:IsA("GuiObject") and obj ~= list then
+            local key = obj:GetAttribute("SearchText")
+            if query ~= "" then
+                obj.Visible = key ~= nil and key:find(query, 1, true) ~= nil
+            else
+                obj.Visible = true
+            end
+        end
+    end
+end
+
+local tabs = {
+    "Home", "Player", "Visuals",
+    "Teleport", "Training", "Settings"
+}
+
+for index, name in ipairs(tabs) do
+    local b = button(
+        sidebar,
+        name,
+        UDim2.new(1, 0, 0, 37),
+        UDim2.new(),
+        theme.card
+    )
+    b.LayoutOrder = index
+
+    b.Activated:Connect(function()
+        for _, other in ipairs(sidebar:GetChildren()) do
+            if other:IsA("TextButton") then
+                animate(other, {BackgroundColor3 = theme.card})
+            end
+        end
+        animate(b, {BackgroundColor3 = theme.yellow})
+        b.TextColor3 = theme.bg
+        currentTab = name
+        render(name)
+    end)
+end
+
+search:GetPropertyChangedSignal("Text"):Connect(function()
+    local query = search.Text:lower()
+    for _, obj in ipairs(page:GetChildren()) do
+        if obj:IsA("GuiObject") and obj ~= list then
+            local key = obj:GetAttribute("SearchText")
+            obj.Visible = query == "" or (
+                key ~= nil and key:find(query, 1, true) ~= nil
+            )
+        end
+    end
+end)
+
+minimize.Activated:Connect(function()
+    local hidden = not sidebar.Visible
+    sidebar.Visible = hidden
+    area.Visible = hidden
+    main.Size = hidden
+        and UDim2.fromOffset(260, 48)
+        or UDim2.fromOffset(540, 410)
+end)
+
+-- Drag with mouse or touchscreen
+local dragging = false
+local dragInput
+local dragStart
+local startPosition
+
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPosition = main.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+header.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+    end
+end)
+
+render("Home")
+print("Banana Upgrade GUI loaded")
