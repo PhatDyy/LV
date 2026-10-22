@@ -1,143 +1,194 @@
 
--- Louis Vuitton Hub
--- Roblox Studio | LocalScript
--- Place in StarterPlayer > StarterPlayerScripts
+--[[
+    LOUIS VUITTON HUB v2.0
+    Roblox Studio - LocalScript
+    Place in StarterPlayer > StarterPlayerScripts
+
+    Functional features:
+    - Multi-tab GUI
+    - Mobile-friendly buttons
+    - Drag window
+    - Minimize and reopen
+    - WalkSpeed / JumpPower controls
+    - FOV adjustment
+    - Fullbright toggle
+    - Lighting effects
+    - Reset settings
+    - Teleport to a SpawnLocation (local test)
+]]
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
 
 local old = playerGui:FindFirstChild("LouisVuittonHub")
 if old then old:Destroy() end
 
-local config = {
-    Speed = 16,
-    Jump = 50,
-    ShowFPS = true,
-    DarkMode = true,
-    MenuOpen = true,
+local C = {
+    bg = Color3.fromRGB(16, 16, 19),
+    panel = Color3.fromRGB(27, 27, 32),
+    item = Color3.fromRGB(37, 37, 43),
+    gold = Color3.fromRGB(211, 175, 92),
+    white = Color3.fromRGB(245, 245, 245),
+    muted = Color3.fromRGB(160, 160, 168),
+    green = Color3.fromRGB(105, 210, 145),
+    red = Color3.fromRGB(230, 100, 100),
+}
+
+local state = {
+    speed = 16,
+    jump = 50,
+    fov = 70,
+    fullbright = false,
+    bloom = false,
+    goldLight = false,
+}
+
+local originalLighting = {
+    Brightness = Lighting.Brightness,
+    ClockTime = Lighting.ClockTime,
+    Ambient = Lighting.Ambient,
+    OutdoorAmbient = Lighting.OutdoorAmbient,
 }
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "LouisVuittonHub"
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
+gui.DisplayOrder = 100
 gui.Parent = playerGui
 
-local function create(class, props, parent)
+local function make(class, props, parent)
     local obj = Instance.new(class)
-    for key, value in pairs(props) do
-        obj[key] = value
+    for k, v in pairs(props) do
+        obj[k] = v
     end
     obj.Parent = parent
     return obj
 end
 
-local gold = Color3.fromRGB(205, 170, 95)
-local bg = Color3.fromRGB(19, 19, 22)
-local panel = Color3.fromRGB(31, 31, 36)
-local white = Color3.fromRGB(240, 240, 240)
+local function round(obj, radius)
+    make("UICorner", {
+        CornerRadius = UDim.new(0, radius or 8)
+    }, obj)
+end
 
-local main = create("Frame", {
+local function stroke(obj, color, thickness)
+    make("UIStroke", {
+        Color = color or C.gold,
+        Thickness = thickness or 1,
+        Transparency = 0.15,
+    }, obj)
+end
+
+local main = make("Frame", {
     Name = "Main",
-    Size = UDim2.new(0.84, 0, 0.72, 0),
-    Position = UDim2.new(0.08, 0, 0.14, 0),
-    BackgroundColor3 = bg,
+    Size = UDim2.new(0.88, 0, 0.72, 0),
+    Position = UDim2.new(0.06, 0, 0.14, 0),
+    BackgroundColor3 = C.bg,
     BorderSizePixel = 0,
     Active = true,
+    ClipsDescendants = true,
 }, gui)
 
-create("UICorner", {CornerRadius = UDim.new(0, 12)}, main)
-create("UIStroke", {Color = gold, Thickness = 1.5}, main)
-
-create("UISizeConstraint", {
-    MinSize = Vector2.new(280, 300),
-    MaxSize = Vector2.new(620, 520),
+make("UISizeConstraint", {
+    MinSize = Vector2.new(300, 320),
+    MaxSize = Vector2.new(650, 560),
 }, main)
+round(main, 12)
+stroke(main, C.gold, 1.5)
 
-local header = create("Frame", {
+local header = make("Frame", {
     Size = UDim2.new(1, 0, 0, 48),
-    BackgroundColor3 = panel,
+    BackgroundColor3 = C.panel,
     BorderSizePixel = 0,
 }, main)
 
-create("UICorner", {CornerRadius = UDim.new(0, 12)}, header)
-
-create("TextLabel", {
-    Size = UDim2.new(0.72, 0, 1, 0),
-    Position = UDim2.new(0, 12, 0, 0),
+local title = make("TextLabel", {
+    Size = UDim2.new(1, -100, 1, 0),
+    Position = UDim2.fromOffset(14, 0),
     BackgroundTransparency = 1,
-    Text = "LV  |  LOUIS VUITTON HUB",
-    TextColor3 = gold,
+    Text = "LV  LOUIS VUITTON HUB",
+    TextColor3 = C.gold,
     TextSize = 15,
     Font = Enum.Font.GothamBold,
     TextXAlignment = Enum.TextXAlignment.Left,
 }, header)
 
-local close = create("TextButton", {
-    Size = UDim2.fromOffset(36, 32),
-    Position = UDim2.new(1, -42, 0, 8),
+local mini = make("TextButton", {
+    Size = UDim2.fromOffset(34, 30),
+    Position = UDim2.new(1, -76, 0, 9),
     Text = "—",
-    TextSize = 20,
-    TextColor3 = white,
-    BackgroundColor3 = bg,
+    TextColor3 = C.gold,
+    TextSize = 18,
     Font = Enum.Font.GothamBold,
+    BackgroundColor3 = C.item,
 }, header)
+round(mini, 7)
 
-create("UICorner", {CornerRadius = UDim.new(0, 8)}, close)
+local exit = make("TextButton", {
+    Size = UDim2.fromOffset(34, 30),
+    Position = UDim2.new(1, -38, 0, 9),
+    Text = "×",
+    TextColor3 = C.red,
+    TextSize = 22,
+    Font = Enum.Font.GothamBold,
+    BackgroundColor3 = C.item,
+}, header)
+round(exit, 7)
 
-local sidebar = create("Frame", {
-    Position = UDim2.new(0, 8, 0, 58),
-    Size = UDim2.new(0, 105, 1, -68),
+local sidebar = make("ScrollingFrame", {
+    Position = UDim2.new(0, 8, 0, 56),
+    Size = UDim2.new(0, 104, 1, -64),
     BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 2,
+    CanvasSize = UDim2.new(),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
 }, main)
 
-create("UIListLayout", {
+make("UIListLayout", {
     Padding = UDim.new(0, 7),
     SortOrder = Enum.SortOrder.LayoutOrder,
 }, sidebar)
 
-local content = create("ScrollingFrame", {
-    Position = UDim2.new(0, 121, 0, 58),
-    Size = UDim2.new(1, -130, 1, -68),
-    BackgroundColor3 = panel,
+local content = make("Frame", {
+    Position = UDim2.new(0, 120, 0, 56),
+    Size = UDim2.new(1, -128, 1, -64),
+    BackgroundColor3 = C.panel,
     BorderSizePixel = 0,
-    ScrollBarThickness = 4,
-    ScrollBarImageColor3 = gold,
-    CanvasSize = UDim2.new(0, 0, 0, 0),
-    AutomaticCanvasSize = Enum.AutomaticSize.Y,
 }, main)
-
-create("UICorner", {CornerRadius = UDim.new(0, 9)}, content)
-
-create("UIPadding", {
-    PaddingTop = UDim.new(0, 10),
-    PaddingLeft = UDim.new(0, 10),
-    PaddingRight = UDim.new(0, 10),
-    PaddingBottom = UDim.new(0, 10),
-}, content)
-
-create("UIListLayout", {
-    Padding = UDim.new(0, 8),
-    SortOrder = Enum.SortOrder.LayoutOrder,
-}, content)
+round(content, 9)
 
 local pages = {}
-local selectedPage
+local tabButtons = {}
+local currentTab
 
 local function makePage(name)
-    local page = create("Frame", {
+    local page = make("ScrollingFrame", {
         Name = name,
-        Size = UDim2.new(1, 0, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
+        Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = C.gold,
+        CanvasSize = UDim2.new(),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
         Visible = false,
     }, content)
 
-    create("UIListLayout", {
+    make("UIPadding", {
+        PaddingTop = UDim.new(0, 10),
+        PaddingBottom = UDim.new(0, 10),
+        PaddingLeft = UDim.new(0, 9),
+        PaddingRight = UDim.new(0, 9),
+    }, page)
+
+    make("UIListLayout", {
         Padding = UDim.new(0, 8),
         SortOrder = Enum.SortOrder.LayoutOrder,
     }, page)
@@ -146,243 +197,442 @@ local function makePage(name)
     return page
 end
 
-local function switchPage(name)
-    selectedPage = name
+local function switchTab(name)
+    currentTab = name
 
-    for pageName, page in pairs(pages) do
-        page.Visible = pageName == name
+    for tabName, page in pairs(pages) do
+        page.Visible = tabName == name
     end
 
-    for _, button in ipairs(sidebar:GetChildren()) do
-        if button:IsA("TextButton") then
-            button.BackgroundColor3 =
-                button.Name == name and gold or panel
+    for tabName, button in pairs(tabButtons) do
+        button.BackgroundColor3 =
+            tabName == name and C.gold or C.item
 
-            button.TextColor3 =
-                button.Name == name and bg or white
-        end
+        button.TextColor3 =
+            tabName == name and C.bg or C.white
     end
 end
 
-local function addButton(page, label, callback)
-    local button = create("TextButton", {
-        Size = UDim2.new(1, 0, 0, 38),
-        BackgroundColor3 = bg,
-        TextColor3 = white,
-        Text = label,
+local function addLabel(page, text)
+    return make("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 30),
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = C.gold,
         TextSize = 13,
+        Font = Enum.Font.GothamBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
+    }, page)
+end
+
+local function addButton(page, text, callback)
+    local button = make("TextButton", {
+        Size = UDim2.new(1, 0, 0, 39),
+        BackgroundColor3 = C.item,
+        TextColor3 = C.white,
+        Text = text,
+        TextSize = 12,
         Font = Enum.Font.GothamMedium,
+        TextWrapped = true,
         AutoButtonColor = true,
     }, page)
 
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, button)
+    round(button, 7)
 
-    button.Activated:Connect(callback)
-    return button
-end
-
-local function addToggle(page, label, default, callback)
-    local enabled = default
-
-    local button = addButton(
-        page,
-        label .. "  [" .. (enabled and "ON" or "OFF") .. "]",
-        function()
-            enabled = not enabled
-            button.Text = label .. "  [" ..
-                (enabled and "ON" or "OFF") .. "]"
-            callback(enabled)
+    button.Activated:Connect(function()
+        local ok, err = pcall(callback, button)
+        if not ok then
+            warn("[LV Hub] " .. tostring(err))
         end
-    )
+    end)
 
     return button
 end
 
-local function addSlider(page, label, minimum, maximum, initial, callback)
+local function addToggle(page, text, initial, callback)
+    local enabled = initial
+    local button
+
+    local function refresh()
+        button.Text = text .. "  [" ..
+            (enabled and "ON" or "OFF") .. "]"
+
+        button.TextColor3 = enabled and C.gold or C.white
+    end
+
+    button = addButton(page, text, function()
+        enabled = not enabled
+        refresh()
+        callback(enabled)
+    end)
+
+    refresh()
+    return button
+end
+
+local function addStepper(page, text, minimum, maximum, initial, callback)
     local value = initial
 
-    local row = create("Frame", {
+    local row = make("Frame", {
         Size = UDim2.new(1, 0, 0, 62),
-        BackgroundColor3 = bg,
+        BackgroundColor3 = C.item,
         BorderSizePixel = 0,
     }, page)
+    round(row, 7)
 
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, row)
-
-    local title = create("TextLabel", {
-        Size = UDim2.new(1, -12, 0, 25),
-        Position = UDim2.new(0, 6, 0, 2),
+    local label = make("TextLabel", {
+        Size = UDim2.new(1, -92, 1, 0),
+        Position = UDim2.fromOffset(8, 0),
         BackgroundTransparency = 1,
-        Text = label .. ": " .. value,
-        TextColor3 = white,
+        Text = text .. ": " .. value,
+        TextColor3 = C.white,
         TextSize = 12,
         Font = Enum.Font.GothamMedium,
         TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
     }, row)
 
-    local minus = create("TextButton", {
-        Position = UDim2.new(0, 6, 0, 31),
-        Size = UDim2.fromOffset(38, 25),
-        Text = "-",
+    local minus = make("TextButton", {
+        Size = UDim2.fromOffset(32, 30),
+        Position = UDim2.new(1, -72, 0.5, -15),
+        Text = "−",
+        TextColor3 = C.gold,
+        BackgroundColor3 = C.bg,
         TextSize = 18,
-        BackgroundColor3 = panel,
-        TextColor3 = gold,
     }, row)
+    round(minus, 6)
 
-    local plus = create("TextButton", {
-        Position = UDim2.new(1, -44, 0, 31),
-        Size = UDim2.fromOffset(38, 25),
+    local plus = make("TextButton", {
+        Size = UDim2.fromOffset(32, 30),
+        Position = UDim2.new(1, -36, 0.5, -15),
         Text = "+",
+        TextColor3 = C.gold,
+        BackgroundColor3 = C.bg,
         TextSize = 18,
-        BackgroundColor3 = panel,
-        TextColor3 = gold,
     }, row)
-
-    create("UICorner", {CornerRadius = UDim.new(0, 6)}, minus)
-    create("UICorner", {CornerRadius = UDim.new(0, 6)}, plus)
+    round(plus, 6)
 
     local function update(delta)
         value = math.clamp(value + delta, minimum, maximum)
-        title.Text = label .. ": " .. value
+        label.Text = text .. ": " .. value
         callback(value)
     end
 
     minus.Activated:Connect(function() update(-1) end)
     plus.Activated:Connect(function() update(1) end)
+
+    return function(newValue)
+        value = math.clamp(newValue, minimum, maximum)
+        label.Text = text .. ": " .. value
+        callback(value)
+    end
 end
 
 local home = makePage("Home")
 local movement = makePage("Movement")
-local visual = makePage("Visual")
+local visuals = makePage("Visuals")
+local world = makePage("World")
 local settings = makePage("Settings")
 
-addButton(home, "Louis Vuitton Hub", function() end)
-addButton(home, "Version 1.0 | Roblox Studio", function() end)
-addButton(home, "Current player: " .. player.Name, function() end)
+-- HOME
+addLabel(home, "WELCOME TO LOUIS VUITTON HUB")
+addButton(home, "Version 2.0 | Mobile Edition", function() end)
+addButton(home, "Player: " .. player.Name, function() end)
+addButton(home, "Refresh character info", function(button)
+    button.Text = "Player: " .. player.Name
+end)
 
-local function applyMovement()
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+-- MOVEMENT
+addLabel(movement, "CHARACTER CONTROLS")
 
-    if humanoid then
-        humanoid.WalkSpeed = config.Speed
-        humanoid.UseJumpPower = true
-        humanoid.JumpPower = config.Jump
+local setSpeed = addStepper(
+    movement, "Walk Speed", 8, 32, 16,
+    function(value)
+        state.speed = value
+        local char = player.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = value end
     end
-end
+)
 
-addSlider(movement, "Walk Speed", 8, 32, 16, function(value)
-    config.Speed = value
-    applyMovement()
+local setJump = addStepper(
+    movement, "Jump Power", 25, 80, 50,
+    function(value)
+        state.jump = value
+        local char = player.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.UseJumpPower = true
+            hum.JumpPower = value
+        end
+    end
+)
+
+addButton(movement, "Reset movement values", function()
+    setSpeed(16)
+    setJump(50)
 end)
 
-addSlider(movement, "Jump Power", 25, 80, 50, function(value)
-    config.Jump = value
-    applyMovement()
+addButton(movement, "Respawn character", function()
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.Health = 0 end
 end)
 
-addButton(movement, "Reset movement", function()
-    config.Speed = 16
-    config.Jump = 50
-    applyMovement()
+-- VISUALS
+addLabel(visuals, "CAMERA AND LIGHTING")
+
+local setFov = addStepper(
+    visuals, "Camera FOV", 50, 100, 70,
+    function(value)
+        state.fov = value
+        if workspace.CurrentCamera then
+            workspace.CurrentCamera.FieldOfView = value
+        end
+    end
+)
+
+addButton(visuals, "Reset camera FOV", function()
+    setFov(70)
 end)
 
-addToggle(visual, "Gold lighting effect", false, function(enabled)
-    local effect = Lighting:FindFirstChild("LVHubEffect")
+addToggle(visuals, "Fullbright", false, function(enabled)
+    state.fullbright = enabled
+
+    if enabled then
+        Lighting.Brightness = 3
+        Lighting.ClockTime = 14
+        Lighting.Ambient = Color3.fromRGB(200, 200, 200)
+        Lighting.OutdoorAmbient = Color3.fromRGB(200, 200, 200)
+    else
+        Lighting.Brightness = originalLighting.Brightness
+        Lighting.ClockTime = originalLighting.ClockTime
+        Lighting.Ambient = originalLighting.Ambient
+        Lighting.OutdoorAmbient = originalLighting.OutdoorAmbient
+    end
+end)
+
+addToggle(visuals, "Gold color effect", false, function(enabled)
+    state.goldLight = enabled
+    local effect = Lighting:FindFirstChild("LVGoldEffect")
 
     if enabled and not effect then
         effect = Instance.new("ColorCorrectionEffect")
-        effect.Name = "LVHubEffect"
-        effect.TintColor = Color3.fromRGB(255, 240, 210)
+        effect.Name = "LVGoldEffect"
+        effect.TintColor = Color3.fromRGB(255, 239, 205)
+        effect.Saturation = -0.05
         effect.Parent = Lighting
     elseif not enabled and effect then
         effect:Destroy()
     end
 end)
 
-addToggle(visual, "Bloom effect", false, function(enabled)
-    local effect = Lighting:FindFirstChild("LVHubBloom")
+addToggle(visuals, "Bloom effect", false, function(enabled)
+    state.bloom = enabled
+    local effect = Lighting:FindFirstChild("LVBloom")
 
     if enabled and not effect then
         effect = Instance.new("BloomEffect")
-        effect.Name = "LVHubBloom"
-        effect.Intensity = 0.25
+        effect.Name = "LVBloom"
+        effect.Intensity = 0.3
         effect.Size = 18
+        effect.Threshold = 1.2
         effect.Parent = Lighting
     elseif not enabled and effect then
         effect:Destroy()
     end
 end)
 
-addToggle(settings, "Dark / Gold theme", true, function(enabled)
-    config.DarkMode = enabled
-    main.BackgroundColor3 = enabled and bg or Color3.fromRGB(235, 235, 235)
-    content.BackgroundColor3 = enabled and panel or Color3.fromRGB(215, 215, 215)
+-- WORLD
+addLabel(world, "WORLD UTILITIES")
+
+addButton(world, "Teleport to a SpawnLocation", function()
+    local char = player.Character
+    if not char then return end
+
+    local spawn = workspace:FindFirstChildWhichIsA(
+        "SpawnLocation", true
+    )
+
+    if spawn then
+        char:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
+    else
+        warn("[LV Hub] No SpawnLocation found in this place.")
+    end
+end)
+
+addButton(world, "Show current position", function(button)
+    local char = player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+
+    if root then
+        local p = root.Position
+        button.Text = string.format(
+            "X %.0f | Y %.0f | Z %.0f", p.X, p.Y, p.Z
+        )
+    end
+end)
+
+-- SETTINGS
+addLabel(settings, "HUB SETTINGS")
+
+addToggle(settings, "Dark theme", true, function(enabled)
+    main.BackgroundColor3 = enabled and C.bg
+        or Color3.fromRGB(235, 235, 235)
+
+    content.BackgroundColor3 = enabled and C.panel
+        or Color3.fromRGB(215, 215, 215)
+
+    title.TextColor3 = enabled and C.gold
+        or Color3.fromRGB(90, 65, 15)
 end)
 
 addButton(settings, "Restore default settings", function()
-    config.Speed = 16
-    config.Jump = 50
-    applyMovement()
+    setSpeed(16)
+    setJump(50)
+    setFov(70)
+
+    if state.fullbright then
+        Lighting.Brightness = originalLighting.Brightness
+        Lighting.ClockTime = originalLighting.ClockTime
+        Lighting.Ambient = originalLighting.Ambient
+        Lighting.OutdoorAmbient = originalLighting.OutdoorAmbient
+        state.fullbright = false
+    end
+
+    for _, name in ipairs({"LVGoldEffect", "LVBloom"}) do
+        local effect = Lighting:FindFirstChild(name)
+        if effect then effect:Destroy() end
+    end
+
+    state.bloom = false
+    state.goldLight = false
 end)
 
-local tabNames = {"Home", "Movement", "Visual", "Settings"}
+-- TABS
+local tabNames = {
+    "Home", "Movement", "Visuals", "World", "Settings"
+}
 
 for index, name in ipairs(tabNames) do
-    local button = create("TextButton", {
+    local button = make("TextButton", {
         Name = name,
         Size = UDim2.new(1, 0, 0, 38),
-        BackgroundColor3 = panel,
-        TextColor3 = white,
+        BackgroundColor3 = C.item,
+        TextColor3 = C.white,
         Text = name,
-        TextSize = 12,
+        TextSize = 11,
         Font = Enum.Font.GothamMedium,
         LayoutOrder = index,
     }, sidebar)
 
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, button)
+    round(button, 7)
+    tabButtons[name] = button
+
     button.Activated:Connect(function()
-        switchPage(name)
+        switchTab(name)
     end)
 end
 
+-- DRAG WINDOW: mouse and touch
+local dragging = false
+local dragStart
+local startPosition
+
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPosition = main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if not dragging then return end
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - dragStart
+
+        main.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- MINIMIZE AND REOPEN
 local minimized = false
 
-close.Activated:Connect(function()
-    minimized = not minimized
-    config.MenuOpen = not minimized
+local reopen = make("TextButton", {
+    Name = "ReopenHub",
+    Size = UDim2.fromOffset(58, 44),
+    Position = UDim2.new(0, 12, 0.45, 0),
+    BackgroundColor3 = C.bg,
+    Text = "LV",
+    TextColor3 = C.gold,
+    TextSize = 16,
+    Font = Enum.Font.GothamBold,
+    Visible = false,
+    Active = true,
+}, gui)
+round(reopen, 10)
+stroke(reopen, C.gold, 1.5)
 
-    sidebar.Visible = not minimized
-    content.Visible = not minimized
-
-    main:TweenSize(
-        minimized and UDim2.new(0.84, 0, 0, 48)
-            or UDim2.new(0.84, 0, 0.72, 0),
-        Enum.EasingDirection.Out,
-        Enum.EasingStyle.Quad,
-        0.2,
-        true
-    )
-
-    close.Text = minimized and "+" or "—"
+mini.Activated:Connect(function()
+    minimized = true
+    main.Visible = false
+    reopen.Visible = true
 end)
 
-player.CharacterAdded:Connect(function()
-    task.wait(0.5)
-    applyMovement()
+reopen.Activated:Connect(function()
+    minimized = false
+    main.Visible = true
+    reopen.Visible = false
 end)
 
-switchPage("Home")
+exit.Activated:Connect(function()
+    gui:Destroy()
 
--- Subtle entrance animation
-main.Position = UDim2.new(0.08, 0, 0.10, 0)
-main.BackgroundTransparency = 0.15
+    Lighting.Brightness = originalLighting.Brightness
+    Lighting.ClockTime = originalLighting.ClockTime
+    Lighting.Ambient = originalLighting.Ambient
+    Lighting.OutdoorAmbient = originalLighting.OutdoorAmbient
+
+    for _, name in ipairs({"LVGoldEffect", "LVBloom"}) do
+        local effect = Lighting:FindFirstChild(name)
+        if effect then effect:Destroy() end
+    end
+end)
+
+player.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid", 10)
+    if hum then
+        hum.WalkSpeed = state.speed
+        hum.UseJumpPower = true
+        hum.JumpPower = state.jump
+    end
+end)
+
+switchTab("Home")
+
+main.Position = UDim2.new(0.06, 0, 0.10, 0)
 
 TweenService:Create(
     main,
-    TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-    {
-        Position = UDim2.new(0.08, 0, 0.14, 0),
-        BackgroundTransparency = 0,
-    }
+    TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    {Position = UDim2.new(0.06, 0, 0.14, 0)}
 ):Play()
+
+print("[Louis Vuitton Hub] Loaded successfully.")
