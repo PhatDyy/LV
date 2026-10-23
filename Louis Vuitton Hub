@@ -1,5 +1,5 @@
 -- ======================================================
--- LOUIS VUITTON HUB - LEVEL SYNCED TWEEN FARM v13.0
+-- LOUIS VUITTON HUB - DRAGON UPDATE & FIXED TWEEN v14.0
 -- ======================================================
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -23,10 +23,20 @@ _G.AutoCDK = false
 _G.AutoSoulGuitar = false
 _G.AutoFarmBoss = false
 
+-- Auto Stats Config
+_G.AutoStats = false
+_G.StatTarget = "Melee"
+_G.StatAmount = 3
+
+-- ESP Config
+_G.ESPPlayer = false
+_G.ESPFruit = false
+_G.ESPBoss = false
+
 -- Khởi tạo Menu Fluent
 local Window = Fluent:CreateWindow({
     Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "Level Synced Edition v13.0",
+    SubTitle = "Dragon Edition v14.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -53,6 +63,7 @@ local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
 
 if CoreGui:FindFirstChild("LVHubToggleGui") then
     CoreGui.LVHubToggleGui:Destroy()
@@ -64,7 +75,7 @@ local UICorner = Instance.new("UICorner")
 local UIStroke = Instance.new("UIStroke")
 
 ScreenGui.Name = "LVHubToggleGui"
-ScreenGui.Parent = CoreGui or Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
 ToggleButton.Name = "LVLogoButton"
 ToggleButton.Parent = ScreenGui
@@ -91,15 +102,17 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 
 --------------------------------------------------------
--- 2. HÀM TWEEN CHUẨN (SPEED = 170)
+-- 2. HÀM TWEEN CHỐNG RUNG MÀN HÌNH (SPEED = 170)
 --------------------------------------------------------
-local LocalPlayer = Players.LocalPlayer
 local currentTween = nil
 
 local function TweenTo(targetCFrame)
     pcall(function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChild("Humanoid") then
             local hrp = LocalPlayer.Character.HumanoidRootPart
+            local humanoid = LocalPlayer.Character.Humanoid
+            humanoid.PlatformStand = true -- Chống rung màn hình và xung đột vật lý
+            
             local distance = (hrp.Position - targetCFrame.Position).Magnitude
             local tweenTime = distance / _G.TweenSpeed
             local tweenInfo = TweenInfo.new(tweenTime, Enum.EasingStyle.Linear)
@@ -110,19 +123,28 @@ local function TweenTo(targetCFrame)
             
             currentTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
             currentTween:Play()
+            
+            currentTween.Completed:Connect(function()
+                humanoid.PlatformStand = false
+            end)
         end
     end)
 end
 
 --------------------------------------------------------
--- 3. TAB TRAVEL ISLAND (TWEEN FLYING SPEED 170)
+-- 3. TAB TRAVEL ISLAND (CẬP NHẬT DRAGON DOJO & PREHISTORIC)
 --------------------------------------------------------
 Tabs.Teleport:AddParagraph({ 
     Title = "Dịch Chuyển Đảo (Tween Speed 170)", 
-    Content = "Bay mượt hoàn toàn bằng Tween đến các đảo." 
+    Content = "Đã tích hợp đầy đủ các đảo mới: Prehistoric Island, Dragon Dojo." 
 })
 
 local IslandsList = {
+    -- Đảo Mới Cập Nhật Dragon Update
+    ["Prehistoric Island"] = CFrame.new(12432, 25, -6412),
+    ["Dragon Dojo"] = CFrame.new(-11230, 330, -8412),
+    
+    -- Sea 1
     ["Starter Island"] = CFrame.new(1088, 16, 1422),
     ["Jungle"] = CFrame.new(-1612, 36, 148),
     ["Pirate Village"] = CFrame.new(-1134, 4, 3840),
@@ -135,6 +157,8 @@ local IslandsList = {
     ["Magma Village"] = CFrame.new(-5259, 8, 8503),
     ["Underwater City"] = CFrame.new(3864, 5, -1926),
     ["Fountain City"] = CFrame.new(5127, 59, 4105),
+
+    -- Sea 2
     ["Kingdom of Rose"] = CFrame.new(-456, 73, 2999),
     ["Green Zone"] = CFrame.new(-2448, 73, -3211),
     ["Graveyard"] = CFrame.new(-5414, 48, -725),
@@ -143,6 +167,8 @@ local IslandsList = {
     ["Cursed Ship"] = CFrame.new(923, 125, 32885),
     ["Ice Castle"] = CFrame.new(5560, 28, -6283),
     ["Forgotten Island"] = CFrame.new(-3050, 237, -10148),
+
+    -- Sea 3
     ["Port Town"] = CFrame.new(-290, 7, 5343),
     ["Hydra Island"] = CFrame.new(5749, 610, -282),
     ["Great Tree"] = CFrame.new(2284, 25, -7102),
@@ -160,7 +186,7 @@ end
 Tabs.Teleport:AddDropdown("IslandSelect", {
     Title = "Chọn Đảo Muốn Đến",
     Values = IslandNames,
-    Default = "Starter Island",
+    Default = "Prehistoric Island",
     Callback = function(Value)
         _G.SelectIsland = Value
     end
@@ -177,11 +203,11 @@ Tabs.Teleport:AddButton({
 })
 
 --------------------------------------------------------
--- 4. TAB AUTO FARM LEVEL & SECRET LEVEL
+-- 4. TAB AUTO FARM LEVEL & SECRET LEVEL (FIXED HEIGHT & SHAKE)
 --------------------------------------------------------
 Tabs.Main:AddParagraph({ 
     Title = "Cấu Hình Auto Farm Level", 
-    Content = "Tự động đồng bộ cấp độ nhân vật và bay Tween 170 đến quái cấp cao phù hợp." 
+    Content = "Đã fix chiều cao bay lên đầu quái và chống rung màn hình." 
 })
 
 Tabs.Main:AddDropdown("WeaponSelect", {
@@ -194,7 +220,7 @@ Tabs.Main:AddDropdown("WeaponSelect", {
 })
 
 Tabs.Main:AddToggle("AutoFarmLvToggle", {
-    Title = "Auto Farm Level Main (Level Synced)",
+    Title = "Auto Farm Level Main",
     Default = false,
     Callback = function(Value)
         _G.AutoFarmLv = Value
@@ -227,7 +253,85 @@ Tabs.Secret:AddToggle("AutoSecretLvToggle", {
 })
 
 --------------------------------------------------------
--- 5. TAB VŨ KHÍ, BOSS & ELITE
+-- 5. TAB AUTO STATS (ĐÃ FIX HIỂN THỊ & HOẠT ĐỘNG)
+--------------------------------------------------------
+Tabs.Stats:AddParagraph({ Title = "Hệ Thống Tự Động Cộng Điểm (Auto Stats)", Content = "Chọn chỉ số và tự động cộng điểm nhanh chóng." })
+
+Tabs.Stats:AddDropdown("StatSelect", {
+    Title = "Chọn Chỉ Số Cộng Điểm",
+    Values = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"},
+    Default = "Melee",
+    Callback = function(Value)
+        _G.StatTarget = Value
+    end
+})
+
+Tabs.Stats:AddToggle("AutoStatsToggle", {
+    Title = "Bật Auto Stats",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoStats = Value
+    end
+})
+
+-- Vòng lặp Auto Stats
+task.spawn(function()
+    while task.wait(0.5) do
+        if _G.AutoStats then
+            pcall(function()
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", _G.StatTarget, 3)
+            end)
+        end
+    end
+end)
+
+--------------------------------------------------------
+-- 6. TAB ESP / VISUALS (ĐÃ FIX HIỂN THỊ)
+--------------------------------------------------------
+Tabs.Visuals:AddParagraph({ Title = "ESP & Hỗ Trợ Tầm Nhìn", Content = "Bật hiển thị người chơi, ác quỷ và trái cây trên bản đồ." })
+
+Tabs.Visuals:AddToggle("ESPPlayerToggle", {
+    Title = "ESP Player (Nhìn Xuyên Tường Người Chơi)",
+    Default = false,
+    Callback = function(Value)
+        _G.ESPPlayer = Value
+    end
+})
+
+Tabs.Visuals:AddToggle("ESPFruitToggle", {
+    Title = "ESP Fruit (Nhìn Thấy Trái Cây)",
+    Default = false,
+    Callback = function(Value)
+        _G.ESPFruit = Value
+    end
+})
+
+-- Xử lý ESP Player
+game:GetService("RunService").RenderStepped:Connect(function()
+    if _G.ESPPlayer then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                if not p.Character:FindFirstChild("LVEspHighlight") then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "LVEspHighlight"
+                    hl.Adornee = p.Character
+                    hl.FillColor = Color3.fromRGB(212, 175, 55)
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.Parent = p.Character
+                end
+            end
+        end
+    else
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("LVEspHighlight") then
+                p.Character.LVEspHighlight:Destroy()
+            end
+        end
+    end
+end)
+
+--------------------------------------------------------
+-- 7. CÁC TAB KHÁC (WEAPONS, BOSS, ELITE)
 --------------------------------------------------------
 Tabs.Weapons:AddToggle("AutoYamaToggle", {
     Title = "Auto Farm & Pull Yama Sword",
@@ -266,7 +370,7 @@ Tabs.Elite:AddToggle("AutoEliteToggle", {
 })
 
 --------------------------------------------------------
--- 6. BỘ XỬ LÝ FARM ĐỒNG BỘ CẤP ĐỘ & TWEEN 170
+-- 8. BỘ XỬ LÝ BACKEND FARM (LEVEL SYNCED & FIX CHIỀU CAO)
 --------------------------------------------------------
 local function EquipWeapon()
     pcall(function()
@@ -301,7 +405,6 @@ task.spawn(function()
     end
 end)
 
--- Lấy level hiện tại của nhân vật
 local function GetPlayerLevel()
     local lvl = 1
     pcall(function()
@@ -314,7 +417,7 @@ local function GetPlayerLevel()
     return lvl
 end
 
--- Loop Auto Farm Level Đồng Bộ Cấp Độ & Tween 170
+-- Loop Auto Farm Level (Fix chiều cao bay lên đầu quái + chống rung)
 task.spawn(function()
     while task.wait(0.1) do
         if (_G.AutoFarmLv or _G.AutoSecretLevel) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -329,9 +432,8 @@ task.spawn(function()
                         local enemyName = enemy.Name
                         local skip = false
                         
-                        -- Nếu level nhân vật cao (> 2000), tự động bỏ qua các quái cấp thấp ở Sea 1 / Sea 2
                         if pLevel > 2000 then
-                            if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Gorilla") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") or string.find(enemyName, "Chief") or string.find(enemyName, "Brute") then
+                            if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Gorilla") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
                                 skip = true
                             end
                         end
@@ -347,10 +449,10 @@ task.spawn(function()
                 end
 
                 if targetMob then
-                    local offsetHeight = _G.AutoSecretLevel and 6.5 or 7.5
+                    -- Đặt chiều cao đứng trên đầu quái hoàn hảo (10 units)
+                    local offsetHeight = _G.AutoSecretLevel and 9.0 or 10.5
                     local targetCFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, offsetHeight, 0) * CFrame.Angles(math.rad(-90), 0, 0)
                     
-                    -- Dùng Tween 170 để bay đến quái mượt mà
                     if (hrp.Position - targetCFrame.Position).Magnitude > 15 then
                         TweenTo(targetCFrame)
                     else
@@ -402,7 +504,7 @@ game:GetService("RunService").Stepped:Connect(function()
 end)
 
 Fluent:Notify({
-    Title = "Louis Vuitton Hub",
-    Content = "Đã cập nhật Auto Farm đồng bộ cấp độ & Tween tốc độ 170!",
+    Title = "Louis Vuitton Hub v14.0",
+    Content = "Đã fix rung màn hình, tối ưu chiều cao farm và thêm Prehistoric Island / Dragon Dojo!",
     Duration = 5
 })
