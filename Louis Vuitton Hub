@@ -1,5 +1,5 @@
 -- ======================================================
--- LOUIS VUITTON HUB - FIXED LOGO & FIXED AUTO FARM
+-- LOUIS VUITTON HUB - RESTORED TRAVEL & SMOOTH FLY
 -- ======================================================
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -25,7 +25,7 @@ _G.AutoFarmBoss = false
 -- Khởi tạo Menu Fluent
 local Window = Fluent:CreateWindow({
     Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "Fixed Edition v8.0",
+    SubTitle = "Smooth Travel Edition v10.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -46,7 +46,7 @@ local Tabs = {
 }
 
 --------------------------------------------------------
--- 1. FIX HOÀN TOÀN LOGO BẬT/TẮT NỔI (NO-BLACK SCREEN)
+-- 1. FIX NÚT LOGO BẬT/TẮT NỔI (VECTOR TEXT BUTTON)
 --------------------------------------------------------
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -84,14 +84,94 @@ UIStroke.Color = Color3.fromRGB(212, 175, 55)
 UIStroke.Thickness = 2.5
 UIStroke.Parent = ToggleButton
 
--- Bấm vào Logo LV để Bật/Tắt Menu
 ToggleButton.MouseButton1Click:Connect(function()
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightControl, false, game)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightControl, false, game)
 end)
 
 --------------------------------------------------------
--- 2. TAB AUTO FARM LEVEL & SECRET LEVEL
+-- 2. KHÔI PHỤC TAB TRAVEL ISLAND (SMOOTH FLYING)
+--------------------------------------------------------
+Tabs.Teleport:AddParagraph({ 
+    Title = "Dịch Chuyển Đảo (Smooth Fly)", 
+    Content = "Đã bỏ hiệu ứng Teleport giật lag. Nhân vật sẽ bay mượt an toàn đến đảo được chọn." 
+})
+
+local IslandsList = {
+    -- Sea 1
+    ["Starter Island"] = CFrame.new(1088, 16, 1422),
+    ["Jungle"] = CFrame.new(-1612, 36, 148),
+    ["Pirate Village"] = CFrame.new(-1134, 4, 3840),
+    ["Desert"] = CFrame.new(943, 6, 4329),
+    ["Middle Town"] = CFrame.new(-690, 15, 1582),
+    ["Frozen Village"] = CFrame.new(1147, 27, -1144),
+    ["Marineford"] = CFrame.new(-4812, 20, 4361),
+    ["Skypiea"] = CFrame.new(-4839, 717, -2639),
+    ["Prison"] = CFrame.new(4875, 5, 735),
+    ["Magma Village"] = CFrame.new(-5259, 8, 8503),
+    ["Underwater City"] = CFrame.new(3864, 5, -1926),
+    ["Fountain City"] = CFrame.new(5127, 59, 4105),
+
+    -- Sea 2
+    ["Kingdom of Rose"] = CFrame.new(-456, 73, 2999),
+    ["Green Zone"] = CFrame.new(-2448, 73, -3211),
+    ["Graveyard"] = CFrame.new(-5414, 48, -725),
+    ["Snow Mountain"] = CFrame.new(1385, 454, -5028),
+    ["Hot and Cold"] = CFrame.new(-6127, 15, -5040),
+    ["Cursed Ship"] = CFrame.new(923, 125, 32885),
+    ["Ice Castle"] = CFrame.new(5560, 28, -6283),
+    ["Forgotten Island"] = CFrame.new(-3050, 237, -10148),
+
+    -- Sea 3
+    ["Port Town"] = CFrame.new(-290, 7, 5343),
+    ["Hydra Island"] = CFrame.new(5749, 610, -282),
+    ["Great Tree"] = CFrame.new(2284, 25, -7102),
+    ["Floating Turtle"] = CFrame.new(-13274, 332, -7628),
+    ["Castle on the Sea"] = CFrame.new(-5085, 316, -3156),
+    ["Haunted Castle"] = CFrame.new(-9513, 142, 5535),
+    ["Sea of Treats"] = CFrame.new(-2100, 38, -12100)
+}
+
+local IslandNames = {}
+for name, _ in pairs(IslandsList) do
+    table.insert(IslandNames, name)
+end
+
+Tabs.Teleport:AddDropdown("IslandSelect", {
+    Title = "Chọn Đảo Muốn Đến",
+    Values = IslandNames,
+    Default = "Starter Island",
+    Callback = function(Value)
+        _G.SelectIsland = Value
+    end
+})
+
+-- Hàm Bay Đến Đảo An Toàn (Smooth Fly)
+local function TravelToIsland(targetCFrame)
+    local player = Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = player.Character.HumanoidRootPart
+        local distance = (hrp.Position - targetCFrame.Position).Magnitude
+        local speed = 320 
+        local tweenInfo = TweenInfo.new(distance / speed, Enum.EasingStyle.Linear)
+        
+        local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+        tween:Play()
+    end
+end
+
+Tabs.Teleport:AddButton({
+    Title = "Di Chuyển Đến Đảo (Smooth Fly)",
+    Callback = function()
+        local targetPos = IslandsList[_G.SelectIsland]
+        if targetPos then
+            TravelToIsland(targetPos)
+        end
+    end
+})
+
+--------------------------------------------------------
+-- 3. TAB AUTO FARM LEVEL & SECRET LEVEL
 --------------------------------------------------------
 Tabs.Main:AddParagraph({ 
     Title = "Cấu Hình Auto Farm Level", 
@@ -141,7 +221,7 @@ Tabs.Secret:AddToggle("AutoSecretLvToggle", {
 })
 
 --------------------------------------------------------
--- 3. CÁC TAB VŨ KHÍ & BOSS
+-- 4. TAB VŨ KHÍ, BOSS & ELITE
 --------------------------------------------------------
 Tabs.Weapons:AddToggle("AutoYamaToggle", {
     Title = "Auto Farm & Pull Yama Sword",
@@ -180,7 +260,7 @@ Tabs.Elite:AddToggle("AutoEliteToggle", {
 })
 
 --------------------------------------------------------
--- 4. BỘ XỬ LÝ FARM & ĐÁNH MỚI (FIXED BACKEND LOGIC)
+-- 5. BỘ XỬ LÝ BACKEND FARM (CỰC MƯỢT)
 --------------------------------------------------------
 local LocalPlayer = Players.LocalPlayer
 
@@ -203,7 +283,7 @@ local function EquipWeapon()
     end)
 end
 
--- Vòng lặp Đánh & Fast Attack
+-- Fast Attack & Tự Động Đánh
 task.spawn(function()
     while task.wait(0.01) do
         if _G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss or _G.AutoClick then
@@ -265,7 +345,7 @@ task.spawn(function()
     end
 end)
 
--- Bật Noclip
+-- Bật Noclip liên tục khi di chuyển / farm
 game:GetService("RunService").Stepped:Connect(function()
     if (_G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss) and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetChildren()) do
@@ -278,6 +358,6 @@ end)
 
 Fluent:Notify({
     Title = "Louis Vuitton Hub",
-    Content = "Đã sửa hoàn toàn lỗi Nút Bị Đen và lỗi Auto Farm!",
+    Content = "Đã khôi phục Travel Island bằng chế độ Bay Mượt (Smooth Fly)!",
     Duration = 5
 })
