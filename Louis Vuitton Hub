@@ -1,9 +1,9 @@
 
 --[[
-    LOUIS VUITTON HUB
-    Black & Gold UI
-    Roblox Lua / LocalScript
-    UI and legitimate player progress tools
+    Louis Vuitton Hub by Phatdyy
+    Roblox Studio - LocalScript
+    Dùng trong game riêng để thử nghiệm giao diện.
+    Đặt trong StarterPlayer > StarterPlayerScripts.
 ]]
 
 local Players = game:GetService("Players")
@@ -16,32 +16,26 @@ local playerGui = player:WaitForChild("PlayerGui")
 local old = playerGui:FindFirstChild("LouisVuittonHub")
 if old then old:Destroy() end
 
-local GOLD = Color3.fromRGB(218, 180, 85)
-local DARK = Color3.fromRGB(17, 17, 20)
-local PANEL = Color3.fromRGB(26, 26, 30)
-local WHITE = Color3.fromRGB(240, 240, 240)
-local GRAY = Color3.fromRGB(155, 155, 165)
-
-local settings = {
-    ShowStats = true,
-    CompactMode = false,
-    ShowChecklist = true
-}
-
-local checklist = {
-    ["Complete current quest"] = false,
-    ["Collect needed materials"] = false,
-    ["Check character stats"] = false,
-    ["Review inventory"] = false
+local C = {
+    bg = Color3.fromRGB(25, 25, 31),
+    panel = Color3.fromRGB(34, 34, 42),
+    item = Color3.fromRGB(44, 44, 54),
+    accent = Color3.fromRGB(75, 180, 230),
+    gold = Color3.fromRGB(210, 177, 100),
+    text = Color3.fromRGB(240, 240, 245),
+    muted = Color3.fromRGB(160, 160, 175),
+    green = Color3.fromRGB(100, 210, 125),
+    red = Color3.fromRGB(225, 95, 95),
 }
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "LouisVuittonHub"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
+gui.DisplayOrder = 100
 gui.Parent = playerGui
 
-local function create(class, props, parent)
+local function make(class, props, parent)
     local obj = Instance.new(class)
     for k, v in pairs(props) do
         obj[k] = v
@@ -50,390 +44,471 @@ local function create(class, props, parent)
     return obj
 end
 
-local main = create("Frame", {
+local function corner(obj, radius)
+    make("UICorner", {
+        CornerRadius = UDim.new(0, radius or 6)
+    }, obj)
+end
+
+local function stroke(obj, color, transparency)
+    make("UIStroke", {
+        Color = color or C.gold,
+        Transparency = transparency or 0.7,
+        Thickness = 1
+    }, obj)
+end
+
+local main = make("Frame", {
     Name = "Main",
-    Size = UDim2.new(0, 540, 0, 355),
-    Position = UDim2.new(0.5, -270, 0.5, -177),
-    BackgroundColor3 = DARK,
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.new(0.88, 0, 0.60, 0),
+    BackgroundColor3 = C.bg,
     BorderSizePixel = 0,
-    ClipsDescendants = true
+    ClipsDescendants = true,
 }, gui)
+corner(main, 9)
+stroke(main, C.gold, 0.45)
 
-create("UICorner", {CornerRadius = UDim.new(0, 12)}, main)
-create("UIStroke", {Color = GOLD, Thickness = 1.4}, main)
-
-local top = create("Frame", {
-    Size = UDim2.new(1, 0, 0, 48),
-    BackgroundColor3 = Color3.fromRGB(10, 10, 12),
-    BorderSizePixel = 0
+make("UISizeConstraint", {
+    MinSize = Vector2.new(300, 280),
+    MaxSize = Vector2.new(850, 600)
 }, main)
-create("UICorner", {CornerRadius = UDim.new(0, 12)}, top)
 
-create("TextLabel", {
-    Position = UDim2.new(0, 15, 0, 0),
-    Size = UDim2.new(1, -80, 1, 0),
+-- Thanh tiêu đề
+local titleBar = make("Frame", {
+    Name = "TitleBar",
+    Size = UDim2.new(1, 0, 0, 42),
+    BackgroundColor3 = Color3.fromRGB(29, 29, 35),
+    BorderSizePixel = 0,
+}, main)
+
+local title = make("TextLabel", {
+    Position = UDim2.new(0, 13, 0, 0),
+    Size = UDim2.new(1, -115, 1, 0),
     BackgroundTransparency = 1,
-    Text = "LV  |  LOUIS VUITTON HUB",
-    TextColor3 = GOLD,
-    Font = Enum.Font.GothamBold,
-    TextSize = 16,
-    TextXAlignment = Enum.TextXAlignment.Left
-}, top)
+    Text = "Louis Vuitton Hub by Phatdyy",
+    TextColor3 = C.text,
+    TextSize = 13,
+    Font = Enum.Font.GothamMedium,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextTruncate = Enum.TextTruncate.AtEnd,
+}, titleBar)
 
-local minimize = create("TextButton", {
-    Position = UDim2.new(1, -42, 0, 8),
-    Size = UDim2.new(0, 30, 0, 30),
+local minimize = make("TextButton", {
+    Position = UDim2.new(1, -88, 0, 5),
+    Size = UDim2.new(0, 34, 0, 30),
     Text = "—",
-    TextSize = 20,
-    Font = Enum.Font.GothamBold,
-    TextColor3 = GOLD,
-    BackgroundColor3 = PANEL,
-    BorderSizePixel = 0
-}, top)
-create("UICorner", {CornerRadius = UDim.new(0, 7)}, minimize)
+    TextSize = 16,
+    Font = Enum.Font.Gotham,
+    TextColor3 = C.text,
+    BackgroundColor3 = C.item,
+    BorderSizePixel = 0,
+}, titleBar)
+corner(minimize, 5)
 
-local sidebar = create("Frame", {
-    Position = UDim2.new(0, 10, 0, 58),
-    Size = UDim2.new(0, 145, 1, -68),
-    BackgroundColor3 = PANEL,
-    BorderSizePixel = 0
-}, main)
-create("UICorner", {CornerRadius = UDim.new(0, 9)}, sidebar)
+local close = make("TextButton", {
+    Position = UDim2.new(1, -48, 0, 5),
+    Size = UDim2.new(0, 34, 0, 30),
+    Text = "×",
+    TextSize = 22,
+    Font = Enum.Font.Gotham,
+    TextColor3 = C.text,
+    BackgroundColor3 = C.item,
+    BorderSizePixel = 0,
+}, titleBar)
+corner(close, 5)
 
-local pages = create("Frame", {
-    Position = UDim2.new(0, 165, 0, 58),
-    Size = UDim2.new(1, -175, 1, -68),
-    BackgroundTransparency = 1
-}, main)
+-- Kéo cửa sổ bằng chuột hoặc cảm ứng
+local dragging = false
+local dragStart, startPosition
 
-local pageNames = {"Dashboard", "Farm Guide", "Items", "Stats", "Settings"}
-local pageFrames = {}
-local tabButtons = {}
-
-local function newPage(name)
-    local page = create("ScrollingFrame", {
-        Name = name,
-        Size = UDim2.fromScale(1, 1),
-        BackgroundColor3 = PANEL,
-        BorderSizePixel = 0,
-        ScrollBarThickness = 3,
-        ScrollBarImageColor3 = GOLD,
-        CanvasSize = UDim2.new(0, 0, 0, 0),
-        AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        Visible = false
-    }, pages)
-
-    create("UICorner", {CornerRadius = UDim.new(0, 9)}, page)
-    create("UIPadding", {
-        PaddingTop = UDim.new(0, 12),
-        PaddingBottom = UDim.new(0, 12),
-        PaddingLeft = UDim.new(0, 12),
-        PaddingRight = UDim.new(0, 12)
-    }, page)
-
-    create("UIListLayout", {
-        Padding = UDim.new(0, 8),
-        SortOrder = Enum.SortOrder.LayoutOrder
-    }, page)
-
-    pageFrames[name] = page
-    return page
-end
-
-local function heading(parent, text)
-    return create("TextLabel", {
-        Size = UDim2.new(1, -4, 0, 28),
-        BackgroundTransparency = 1,
-        Text = text,
-        TextColor3 = GOLD,
-        Font = Enum.Font.GothamBold,
-        TextSize = 15,
-        TextXAlignment = Enum.TextXAlignment.Left
-    }, parent)
-end
-
-local function label(parent, text, height)
-    return create("TextLabel", {
-        Size = UDim2.new(1, -4, 0, height or 32),
-        BackgroundColor3 = DARK,
-        BorderSizePixel = 0,
-        Text = "  " .. text,
-        TextColor3 = WHITE,
-        Font = Enum.Font.Gotham,
-        TextSize = 12,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Left
-    }, parent)
-end
-
-local function button(parent, text, callback)
-    local b = create("TextButton", {
-        Size = UDim2.new(1, -4, 0, 35),
-        BackgroundColor3 = DARK,
-        BorderSizePixel = 0,
-        Text = text,
-        TextColor3 = WHITE,
-        Font = Enum.Font.GothamSemibold,
-        TextSize = 12,
-        AutoButtonColor = false
-    }, parent)
-
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, b)
-    create("UIStroke", {Color = Color3.fromRGB(65, 60, 48), Thickness = 1}, b)
-
-    b.MouseEnter:Connect(function()
-        TweenService:Create(b, TweenInfo.new(0.12), {
-            BackgroundColor3 = Color3.fromRGB(52, 45, 30)
-        }):Play()
-    end)
-
-    b.MouseLeave:Connect(function()
-        TweenService:Create(b, TweenInfo.new(0.12), {
-            BackgroundColor3 = DARK
-        }):Play()
-    end)
-
-    b.Activated:Connect(callback)
-    return b
-end
-
-local function switchPage(name)
-    for pageName, page in pairs(pageFrames) do
-        page.Visible = pageName == name
-    end
-
-    for tabName, tab in pairs(tabButtons) do
-        tab.BackgroundColor3 = tabName == name and
-            Color3.fromRGB(68, 53, 25) or DARK
-        tab.TextColor3 = tabName == name and GOLD or WHITE
-    end
-end
-
-for i, name in ipairs(pageNames) do
-    local page = newPage(name)
-
-    local tab = create("TextButton", {
-        Position = UDim2.new(0, 7, 0, 8 + (i - 1) * 43),
-        Size = UDim2.new(1, -14, 0, 35),
-        BackgroundColor3 = DARK,
-        BorderSizePixel = 0,
-        Text = "  " .. name,
-        TextColor3 = WHITE,
-        Font = Enum.Font.GothamSemibold,
-        TextSize = 12,
-        TextXAlignment = Enum.TextXAlignment.Left
-    }, sidebar)
-
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, tab)
-    tabButtons[name] = tab
-    tab.Activated:Connect(function()
-        switchPage(name)
-    end)
-end
-
--- DASHBOARD
-do
-    local p = pageFrames["Dashboard"]
-    heading(p, "WELCOME BACK")
-    label(p, "Player: " .. player.Name)
-    local level = label(p, "Level: loading...")
-    local health = label(p, "Health: loading...")
-    local position = label(p, "Position: loading...")
-    local status = label(p, "Status: Hub ready", 42)
-
-    button(p, "Refresh Character Info", function()
-        local ls = player:FindFirstChild("leaderstats")
-        local lv = ls and (ls:FindFirstChild("Level") or ls:FindFirstChild("Lv"))
-        level.Text = "  Level: " .. (lv and tostring(lv.Value) or "Not available")
-
-        local char = player.Character
-        local hum = char and char:FindFirstChildOfClass("Humanoid")
-        health.Text = hum and string.format(
-            "  Health: %.0f / %.0f", hum.Health, hum.MaxHealth
-        ) or "  Health: character unavailable"
-
-        local root = char and char:FindFirstChild("HumanoidRootPart")
-        position.Text = root and string.format(
-            "  Position: %.0f, %.0f, %.0f",
-            root.Position.X, root.Position.Y, root.Position.Z
-        ) or "  Position: unavailable"
-
-        status.Text = "  Status: Information refreshed"
-    end)
-
-    button(p, "Show / Hide Hub", function()
-        main.Visible = not main.Visible
-    end)
-end
-
--- FARM GUIDE
-do
-    local p = pageFrames["Farm Guide"]
-    heading(p, "FARM PROGRESS CHECKLIST")
-    label(p, "Checklist only: it does not automate actions in public Blox Fruits.")
-
-    for taskName in pairs(checklist) do
-        button(p, (checklist[taskName] and "[DONE] " or "[TODO] ") .. taskName,
-            function()
-                checklist[taskName] = not checklist[taskName]
-                -- Refresh this tab to update checklist labels.
-                switchPage("Dashboard")
-                switchPage("Farm Guide")
-            end)
-    end
-
-    button(p, "Reset Checklist", function()
-        for taskName in pairs(checklist) do
-            checklist[taskName] = false
-        end
-        switchPage("Dashboard")
-        switchPage("Farm Guide")
-    end)
-end
-
--- ITEMS
-do
-    local p = pageFrames["Items"]
-    heading(p, "ITEM TRACKER")
-    label(p, "Use this page to plan which items to collect.")
-    local itemInput = create("TextBox", {
-        Size = UDim2.new(1, -4, 0, 36),
-        BackgroundColor3 = DARK,
-        BorderSizePixel = 0,
-        Text = "",
-        PlaceholderText = "Enter item / material name...",
-        PlaceholderColor3 = GRAY,
-        TextColor3 = WHITE,
-        Font = Enum.Font.Gotham,
-        TextSize = 12,
-        ClearTextOnFocus = false
-    }, p)
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, itemInput)
-
-    local itemList = {}
-    local itemContainer = create("Frame", {
-        Size = UDim2.new(1, -4, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundTransparency = 1
-    }, p)
-    create("UIListLayout", {
-        Padding = UDim.new(0, 5),
-        SortOrder = Enum.SortOrder.LayoutOrder
-    }, itemContainer)
-
-    button(p, "Add Item to Tracker", function()
-        local name = itemInput.Text:gsub("^%s+", ""):gsub("%s+$", "")
-        if name == "" then return end
-        table.insert(itemList, name)
-        label(itemContainer, "• " .. name, 28)
-        itemInput.Text = ""
-    end)
-end
-
--- STATS
-do
-    local p = pageFrames["Stats"]
-    heading(p, "CHARACTER STATS")
-    label(p, "Displays only information exposed by the game client.")
-    local container = create("Frame", {
-        Size = UDim2.new(1, -4, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundTransparency = 1
-    }, p)
-    create("UIListLayout", {
-        Padding = UDim.new(0, 5)
-    }, container)
-
-    button(p, "Read Available Stats", function()
-        for _, child in ipairs(container:GetChildren()) do
-            if child:IsA("TextLabel") then child:Destroy() end
-        end
-
-        local ls = player:FindFirstChild("leaderstats")
-        if not ls then
-            label(container, "No public leaderstats found.")
-            return
-        end
-
-        for _, stat in ipairs(ls:GetChildren()) do
-            if stat:IsA("ValueBase") then
-                label(container, stat.Name .. ": " .. tostring(stat.Value))
-            end
-        end
-    end)
-end
-
--- SETTINGS
-do
-    local p = pageFrames["Settings"]
-    heading(p, "HUB SETTINGS")
-
-    button(p, "Toggle Compact Mode", function()
-        settings.CompactMode = not settings.CompactMode
-        main.Size = settings.CompactMode
-            and UDim2.new(0, 540, 0, 260)
-            or UDim2.new(0, 540, 0, 355)
-    end)
-
-    button(p, "Toggle Checklist Visibility", function()
-        settings.ShowChecklist = not settings.ShowChecklist
-        pageFrames["Farm Guide"].Visible = settings.ShowChecklist
-            and pageFrames["Farm Guide"].Visible or false
-    end)
-
-    button(p, "Hide / Show Sidebar", function()
-        sidebar.Visible = not sidebar.Visible
-    end)
-
-    button(p, "Close Hub", function()
-        gui:Destroy()
-    end)
-
-    label(p, "LV Hub • Black / Gold Edition")
-    label(p, "Settings last for this session only.")
-end
-
--- Drag window using the header; works with mouse and touch.
-do
-    local dragging = false
-    local dragStart, startPos
-
-    top.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = main.Position
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (
-            input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch
-        ) then
-            local delta = input.Position - dragStart
-            main.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-end
-
-minimize.Activated:Connect(function()
-    local minimized = main.Size.Y.Offset < 100
-    main.Size = minimized
-        and UDim2.new(0, 540, 0, 355)
-        or UDim2.new(0, 540, 0, 48)
+        dragging = true
+        dragStart = input.Position
+        startPosition = main.Position
+    end
 end)
 
-switchPage("Dashboard")
-print("[Louis Vuitton Hub] Loaded successfully.")
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+local minimized = false
+local fullSize = main.Size
+
+minimize.Activated:Connect(function()
+    minimized = not minimized
+    if minimized then
+        fullSize = main.Size
+        TweenService:Create(main, TweenInfo.new(0.18), {
+            Size = UDim2.new(
+                fullSize.X.Scale, fullSize.X.Offset, 0, 42
+            )
+        }):Play()
+        minimize.Text = "□"
+    else
+        TweenService:Create(main, TweenInfo.new(0.18), {
+            Size = fullSize
+        }):Play()
+        minimize.Text = "—"
+    end
+end)
+
+close.Activated:Connect(function()
+    gui:Destroy()
+end)
+
+-- Khung nội dung
+local body = make("Frame", {
+    Name = "Body",
+    Position = UDim2.new(0, 0, 0, 42),
+    Size = UDim2.new(1, 0, 1, -42),
+    BackgroundTransparency = 1,
+}, main)
+
+local sidebar = make("ScrollingFrame", {
+    Name = "Sidebar",
+    Position = UDim2.new(0, 0, 0, 0),
+    Size = UDim2.new(0, 145, 1, 0),
+    BackgroundColor3 = Color3.fromRGB(29, 29, 36),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 3,
+    ScrollBarImageColor3 = C.accent,
+    CanvasSize = UDim2.new(),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+}, body)
+
+make("UIPadding", {
+    PaddingTop = UDim.new(0, 8),
+    PaddingLeft = UDim.new(0, 7),
+    PaddingRight = UDim.new(0, 7),
+    PaddingBottom = UDim.new(0, 8),
+}, sidebar)
+
+make("UIListLayout", {
+    Padding = UDim.new(0, 5),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+}, sidebar)
+
+local content = make("Frame", {
+    Name = "Content",
+    Position = UDim2.new(0, 145, 0, 0),
+    Size = UDim2.new(1, -145, 1, 0),
+    BackgroundColor3 = C.bg,
+    BorderSizePixel = 0,
+}, body)
+
+local heading = make("TextLabel", {
+    Position = UDim2.new(0, 14, 0, 8),
+    Size = UDim2.new(1, -28, 0, 32),
+    BackgroundTransparency = 1,
+    Text = "Tab Status And Server",
+    TextColor3 = C.text,
+    TextSize = 19,
+    Font = Enum.Font.GothamBold,
+    TextXAlignment = Enum.TextXAlignment.Center,
+}, content)
+
+local scroll = make("ScrollingFrame", {
+    Name = "Options",
+    Position = UDim2.new(0, 10, 0, 49),
+    Size = UDim2.new(1, -20, 1, -58),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 3,
+    ScrollBarImageColor3 = C.accent,
+    CanvasSize = UDim2.new(),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+}, content)
+
+make("UIListLayout", {
+    Padding = UDim.new(0, 7),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+}, scroll)
+
+make("UIPadding", {
+    PaddingBottom = UDim.new(0, 10),
+}, scroll)
+
+-- Các hàng chức năng
+local function clearOptions()
+    for _, child in ipairs(scroll:GetChildren()) do
+        if child:IsA("GuiObject") and child ~= nil
+            and not child:IsA("UIListLayout")
+            and not child:IsA("UIPadding") then
+            child:Destroy()
+        end
+    end
+end
+
+local function addLabel(text, detail)
+    local row = make("Frame", {
+        Size = UDim2.new(1, -4, 0, detail and 53 or 38),
+        BackgroundColor3 = C.panel,
+        BorderSizePixel = 0,
+    }, scroll)
+    corner(row, 5)
+
+    make("TextLabel", {
+        Position = UDim2.new(0, 10, 0, detail and 5 or 0),
+        Size = UDim2.new(1, -20, 0, detail and 22 or 38),
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = C.text,
+        TextSize = 12,
+        Font = Enum.Font.GothamMedium,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, row)
+
+    if detail then
+        make("TextLabel", {
+            Position = UDim2.new(0, 10, 0, 27),
+            Size = UDim2.new(1, -20, 0, 18),
+            BackgroundTransparency = 1,
+            Text = detail,
+            TextColor3 = C.muted,
+            TextSize = 10,
+            Font = Enum.Font.Gotham,
+            TextXAlignment = Enum.TextXAlignment.Left,
+        }, row)
+    end
+    return row
+end
+
+local function addToggle(label, initial, callback)
+    local row = make("Frame", {
+        Size = UDim2.new(1, -4, 0, 40),
+        BackgroundColor3 = C.panel,
+        BorderSizePixel = 0,
+    }, scroll)
+    corner(row, 5)
+
+    make("TextLabel", {
+        Position = UDim2.new(0, 10, 0, 0),
+        Size = UDim2.new(1, -65, 1, 0),
+        BackgroundTransparency = 1,
+        Text = label,
+        TextColor3 = C.text,
+        TextSize = 12,
+        Font = Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, row)
+
+    local on = initial == true
+    local toggle = make("TextButton", {
+        Position = UDim2.new(1, -49, 0.5, -10),
+        Size = UDim2.new(0, 39, 0, 20),
+        BackgroundColor3 = on and C.green or C.item,
+        Text = on and "ON" or "OFF",
+        TextColor3 = C.text,
+        TextSize = 9,
+        Font = Enum.Font.GothamBold,
+        BorderSizePixel = 0,
+    }, row)
+    corner(toggle, 5)
+
+    toggle.Activated:Connect(function()
+        on = not on
+        toggle.Text = on and "ON" or "OFF"
+        toggle.BackgroundColor3 = on and C.green or C.item
+        if callback then callback(on) end
+    end)
+    return row
+end
+
+local function addButton(label, callback)
+    local btn = make("TextButton", {
+        Size = UDim2.new(1, -4, 0, 42),
+        BackgroundColor3 = C.item,
+        BorderSizePixel = 0,
+        Text = label,
+        TextColor3 = C.text,
+        TextSize = 12,
+        Font = Enum.Font.GothamMedium,
+        AutoButtonColor = true,
+    }, scroll)
+    corner(btn, 5)
+    stroke(btn, C.gold, 0.82)
+    btn.Activated:Connect(callback or function() end)
+    return btn
+end
+
+local tabs = {
+    "Tab Shop",
+    "Tab Status And Server",
+    "Tab Local Player",
+    "Setting Farm",
+    "Setting Hold and Select Skill",
+    "Tab Farming",
+    "Tab Stack Farm",
+}
+
+local selectedTab
+local buttons = {}
+
+local function renderTab(tab)
+    selectedTab = tab
+    heading.Text = tab
+    clearOptions()
+
+    for name, button in pairs(buttons) do
+        button.BackgroundColor3 =
+            name == tab and Color3.fromRGB(48, 62, 76) or C.item
+    end
+
+    if tab == "Tab Status And Server" then
+        addLabel("Time", "Elapsed session time: " ..
+            os.date("%H:%M:%S"))
+        addToggle("Elite Mob", false, function(on)
+            print("Elite Mob demo toggle:", on)
+        end)
+        addButton("Summon Katakuri", function()
+            addLabel("Notice", "Demo button clicked")
+        end)
+        addLabel("Status SPY", "Demo status: Ready")
+        addLabel("Server Status", "Connected to this game session")
+        addButton("Refresh Status", function()
+            renderTab("Tab Status And Server")
+        end)
+
+    elseif tab == "Tab Shop" then
+        addLabel("Shop", "Interface demonstration")
+        addButton("Open Shop Panel", function()
+            addLabel("Shop", "Connect your own shop system here")
+        end)
+        addButton("Refresh Shop", function()
+            renderTab("Tab Shop")
+        end)
+
+    elseif tab == "Tab Local Player" then
+        addLabel("Local Player", player.Name)
+        addToggle("Show Player Info", true, function(on)
+            print("Show Player Info:", on)
+        end)
+        addToggle("WalkSpeed Demo", false, function(on)
+            print("WalkSpeed demo toggle:", on)
+        end)
+        addButton("Show Character Status", function()
+            local char = player.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            addLabel("Character", hum and
+                ("Health: " .. math.floor(hum.Health)) or "Character not loaded")
+        end)
+
+    elseif tab == "Setting Farm" then
+        addLabel("Farm Settings", "Configure demo options")
+        addToggle("Enable Farm UI", false)
+        addToggle("Show Quest Info", true)
+        addToggle("Show Mob Counter", true)
+        addButton("Reset Farm Settings", function()
+            renderTab("Setting Farm")
+        end)
+
+    elseif tab == "Setting Hold and Select Skill" then
+        addLabel("Hold and Select Skill", "UI settings")
+        for _, skill in ipairs({"Skill Z", "Skill X", "Skill C", "Skill V"}) do
+            addToggle("Enable " .. skill, false, function(on)
+                print(skill, on)
+            end)
+        end
+
+    elseif tab == "Tab Farming" then
+        addLabel("Farming", "Private game UI demo")
+        addToggle("Enable Farming Panel", false)
+        addToggle("Show Progress", true)
+        addButton("Start Demo", function()
+            addLabel("Demo", "Button activated successfully")
+        end)
+        addButton("Stop Demo", function()
+            addLabel("Demo", "Demo stopped")
+        end)
+
+    elseif tab == "Tab Stack Farm" then
+        addLabel("Stack Farm", "Private game UI demo")
+        addToggle("Enable Stack Panel", false)
+        addButton("Start Stack Demo", function()
+            addLabel("Stack", "Demo started")
+        end)
+        addButton("Reset Stack Demo", function()
+            renderTab("Tab Stack Farm")
+        end)
+    end
+end
+
+for i, tab in ipairs(tabs) do
+    local btn = make("TextButton", {
+        Name = "Tab" .. i,
+        LayoutOrder = i,
+        Size = UDim2.new(1, 0, 0, 36),
+        BackgroundColor3 = C.item,
+        BorderSizePixel = 0,
+        Text = tab,
+        TextColor3 = C.text,
+        TextSize = 10,
+        Font = Enum.Font.Gotham,
+        TextWrapped = true,
+        AutoButtonColor = true,
+    }, sidebar)
+    corner(btn, 5)
+    buttons[tab] = btn
+
+    btn.Activated:Connect(function()
+        renderTab(tab)
+    end)
+end
+
+renderTab("Tab Status And Server")
+
+-- Nút nổi để mở lại menu khi thu nhỏ cửa sổ
+local reopen = make("TextButton", {
+    Name = "ReopenButton",
+    AnchorPoint = Vector2.new(0, 0),
+    Position = UDim2.new(0, 12, 0.35, 0),
+    Size = UDim2.new(0, 48, 0, 48),
+    BackgroundColor3 = C.bg,
+    Text = "LV",
+    TextColor3 = C.gold,
+    TextSize = 15,
+    Font = Enum.Font.GothamBold,
+    BorderSizePixel = 0,
+    Visible = false,
+}, gui)
+corner(reopen, 24)
+stroke(reopen, C.gold, 0.3)
+
+minimize.Activated:Connect(function()
+    task.delay(0.2, function()
+        reopen.Visible = minimized
+    end)
+end)
+
+reopen.Activated:Connect(function()
+    if not gui.Parent then return end
+    minimized = false
+    main.Size = fullSize
+    reopen.Visible = false
+    minimize.Text = "—"
+end)
+
+print("Louis Vuitton Hub by Phatdyy loaded!")
