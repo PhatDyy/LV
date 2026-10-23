@@ -1,10 +1,8 @@
 -- ======================================================
--- BLOX FRUITS FULL FUNCTION SCRIPT (OPEN SOURCE)
--- UI Library: Fluent UI
+-- LOUIS VUITTON HUB - BLOX FRUITS FULL SCRIPT
 -- ======================================================
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 
 -- Biến Cấu Hình (Settings)
 _G.AutoFarm = false
@@ -12,11 +10,15 @@ _G.AutoClick = false
 _G.BringMob = false
 _G.FruitESP = false
 _G.PlayerESP = false
+_G.AutoBuso = false
+_G.AutoStatsMelee = false
+_G.AutoStatsDefense = false
+_G.AutoStatsSword = false
 
 -- Khởi tạo Cửa sổ Menu
 local Window = Fluent:CreateWindow({
-    Title = "Blox Fruits Hub | Full Features",
-    SubTitle = "by GitHub Dev",
+    Title = "Louis Vuitton Hub | Blox Fruits",
+    SubTitle = "Luxury Edition",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -27,51 +29,108 @@ local Window = Fluent:CreateWindow({
 -- Tạo Các Tabs
 local Tabs = {
     Main = Window:AddTab({ Title = "Auto Farm", Icon = "sword" }),
+    Stats = Window:AddTab({ Title = "Auto Stats", Icon = "trending-up" }),
     Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
     Visuals = Window:AddTab({ Title = "ESP / Visuals", Icon = "eye" }),
-    Stats = Window:AddTab({ Title = "Miscellaneous", Icon = "settings" })
+    Misc = Window:AddTab({ Title = "Miscellaneous", Icon = "settings" })
 }
 
 --------------------------------------------------------
--- TAB: AUTO FARM
+-- TẠO NÚT LOGO BẬT/TẮT MENU TRÊN MÀN HÌNH (IMAGE BUTTON)
 --------------------------------------------------------
-Tabs.Main:AddParagraph({
-    Title = "Farm Status",
-    Content = "Bật các tính năng bên dưới để tự động cày cấp."
-})
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("ImageButton")
+local UICorner = Instance.new("UICorner")
 
--- Toggle Auto Click
+ScreenGui.Parent = game:GetService("CoreGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "LVHubToggleGui"
+
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Position = UDim2.new(0.02, 0, 0.2, 0)
+ToggleButton.BackgroundTransparency = 1
+-- Đặt ID ảnh logo Louis Vuitton (Đã upload/chuyển đổi ID phù hợp Roblox)
+ToggleButton.Image = "rbxassetid://152621" -- Có thể thay ID decal/asset Roblox của bạn tại đây
+ToggleButton.Active = true
+ToggleButton.Draggable = true
+
+UICorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = ToggleButton
+
+-- Sự kiện bấm vào Logo để Bật/Tắt giao diện
+ToggleButton.MouseButton1Click:Connect(function()
+    VirtualInputManager = game:GetService("VirtualInputManager")
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightControl, false, game)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightControl, false, game)
+end)
+
+--------------------------------------------------------
+-- TAB 1: AUTO FARM & COMBAT
+--------------------------------------------------------
 Tabs.Main:AddToggle("AutoClickToggle", {
-    Title = "Auto Click / Attack",
+    Title = "Auto Attack / Fast Click",
     Default = false,
     Callback = function(Value)
         _G.AutoClick = Value
     end
 })
 
--- Toggle Auto Farm (Fast Attack + Bring Mob)
 Tabs.Main:AddToggle("AutoFarmToggle", {
-    Title = "Auto Farm Level",
+    Title = "Auto Farm Level & Quest",
     Default = false,
     Callback = function(Value)
         _G.AutoFarm = Value
     end
 })
 
--- Toggle Bring Mob
 Tabs.Main:AddToggle("BringMobToggle", {
-    Title = "Gom Quái Lại Gần (Bring Mobs)",
+    Title = "Gom Quái (Bring Mobs)",
     Default = false,
     Callback = function(Value)
         _G.BringMob = Value
     end
 })
 
+Tabs.Main:AddToggle("AutoBusoToggle", {
+    Title = "Tự Động Bật Haki Vũ Khí (Buso)",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoBuso = Value
+    end
+})
+
 --------------------------------------------------------
--- TAB: TELEPORT
+-- TAB 2: AUTO STATS (CỘNG ĐIỂM TỰ ĐỘNG)
+--------------------------------------------------------
+Tabs.Stats:AddToggle("AutoMelee", {
+    Title = "Auto Up Melee (Cận chiến)",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoStatsMelee = Value
+    end
+})
+
+Tabs.Stats:AddToggle("AutoDefense", {
+    Title = "Auto Up Defense (Máu)",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoStatsDefense = Value
+    end
+})
+
+Tabs.Stats:AddToggle("AutoSword", {
+    Title = "Auto Up Sword (Kiếm)",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoStatsSword = Value
+    end
+})
+
+--------------------------------------------------------
+-- TAB 3: TELEPORT (DỊCH CHUYỂN)
 --------------------------------------------------------
 Tabs.Teleport:AddButton({
-    Title = "Dịch Chuyển Đến Đảo Khởi Đầu (Starter Island)",
+    Title = "Dịch Chuyển Đảo Khởi Đầu (Starter)",
     Callback = function()
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1088, 16, 1422)
@@ -80,7 +139,7 @@ Tabs.Teleport:AddButton({
 })
 
 Tabs.Teleport:AddButton({
-    Title = "Dịch Chuyển Đến Đảo Marineford",
+    Title = "Dịch Chuyển Marineford",
     Callback = function()
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-4812, 20, 4361)
@@ -89,10 +148,10 @@ Tabs.Teleport:AddButton({
 })
 
 --------------------------------------------------------
--- TAB: VISUALS (ESP)
+-- TAB 4: VISUALS (ESP)
 --------------------------------------------------------
 Tabs.Visuals:AddToggle("FruitESPToggle", {
-    Title = "ESP Trái Ác Quỷ (Fruit ESP)",
+    Title = "ESP Trái Ác Quỷ",
     Default = false,
     Callback = function(Value)
         _G.FruitESP = Value
@@ -100,7 +159,7 @@ Tabs.Visuals:AddToggle("FruitESPToggle", {
 })
 
 Tabs.Visuals:AddToggle("PlayerESPToggle", {
-    Title = "ESP Người Chơi (Player ESP)",
+    Title = "ESP Người Chơi",
     Default = false,
     Callback = function(Value)
         _G.PlayerESP = Value
@@ -108,32 +167,42 @@ Tabs.Visuals:AddToggle("PlayerESPToggle", {
 })
 
 --------------------------------------------------------
--- TAB: MISCELLANEOUS
+-- TAB 5: MISCELLANEOUS
 --------------------------------------------------------
-Tabs.Stats:AddButton({
-    Title = "Tự Động Mua / Random Trái Ác Quỷ",
+Tabs.Misc:AddButton({
+    Title = "Random Trái Ác Quỷ (Cousin NPC)",
     Callback = function()
-        local args = { [1] = "Cousin", [2] = "Buy" }
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Cousin", "Buy")
     end
 })
 
 -- ======================================================
--- LOGIC VÒNG LẶP HỆ THỐNG (BACKGROUND LOOPS)
+-- LOGIC VÒNG LẶP NỀN (BACKGROUND LOGIC)
 -- ======================================================
 
 local VirtualUser = game:GetService("VirtualUser")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Vòng lặp Auto Click
+-- Vòng lặp Đánh Tốc Độ (Fast Attack / Auto Click)
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.05) do
         if _G.AutoClick or _G.AutoFarm then
             pcall(function()
                 VirtualUser:CaptureController()
                 VirtualUser:ClickButton1(Vector2.new(0, 0))
             end)
+        end
+    end
+end)
+
+-- Vòng lặp Auto Bật Haki Buso
+task.spawn(function()
+    while task.wait(2) do
+        if _G.AutoBuso and LocalPlayer.Character then
+            if not LocalPlayer.Character:FindFirstChild("HasBuso") then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("HasBuso")
+            end
         end
     end
 end)
@@ -157,29 +226,26 @@ task.spawn(function()
     end
 end)
 
--- Vòng lặp ESP Trái Ác Quỷ
+-- Vòng lặp Auto Cộng Điểm (Auto Stats)
 task.spawn(function()
-    while task.wait(2) do
-        if _G.FruitESP then
-            pcall(function()
-                for _, obj in pairs(workspace:GetChildren()) do
-                    if obj:IsA("Tool") or string.find(obj.Name, "Fruit") then
-                        if not obj:FindFirstChild("FruitHighlight") then
-                            local highlight = Instance.new("Highlight")
-                            highlight.Name = "FruitHighlight"
-                            highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                            highlight.Parent = obj
-                        end
-                    end
-                end
-            end)
-        end
+    while task.wait(0.5) do
+        pcall(function()
+            if _G.AutoStatsMelee then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 1)
+            end
+            if _G.AutoStatsDefense then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Defense", 1)
+            end
+            if _G.AutoStatsSword then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Sword", 1)
+            end
+        end)
     end
 end)
 
--- Thông báo khi script load thành công
+-- Thông báo khi load xong
 Fluent:Notify({
-    Title = "Script Loaded!",
-    Content = "Script Blox Fruits đã khởi chạy thành công.",
+    Title = "Louis Vuitton Hub",
+    Content = "Đã khởi chạy Louis Vuitton Hub thành công! Bấm vào logo để bật/tắt.",
     Duration = 5
 })
