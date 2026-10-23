@@ -1,5 +1,5 @@
 -- ======================================================
--- LOUIS VUITTON HUB - FULL LEGENDARY WEAPONS & BOSSES
+-- LOUIS VUITTON HUB - FIXED LOGO & FIXED AUTO FARM
 -- ======================================================
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -16,18 +16,16 @@ _G.FastAttack = true
 _G.SelectWeapon = "Melee"
 _G.SelectIsland = "Starter Island"
 
--- Biến Cấu Hình Mới
 _G.AutoYama = false
 _G.AutoTushita = false
 _G.AutoCDK = false
 _G.AutoSoulGuitar = false
 _G.AutoFarmBoss = false
-_G.SelectBoss = "All"
 
 -- Khởi tạo Menu Fluent
 local Window = Fluent:CreateWindow({
     Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "CDK & Soul Guitar Edition v6.0",
+    SubTitle = "Fixed Edition v8.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -48,7 +46,7 @@ local Tabs = {
 }
 
 --------------------------------------------------------
--- 1. NÚT LOGO BẬT / TẮT MENU (FLOATING LOGO BUTTON)
+-- 1. FIX HOÀN TOÀN LOGO BẬT/TẮT NỔI (NO-BLACK SCREEN)
 --------------------------------------------------------
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -60,7 +58,7 @@ if CoreGui:FindFirstChild("LVHubToggleGui") then
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-local ToggleButton = Instance.new("ImageButton")
+local ToggleButton = Instance.new("TextButton")
 local UICorner = Instance.new("UICorner")
 local UIStroke = Instance.new("UIStroke")
 
@@ -69,11 +67,13 @@ ScreenGui.Parent = CoreGui or Players.LocalPlayer:WaitForChild("PlayerGui")
 
 ToggleButton.Name = "LVLogoButton"
 ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Position = UDim2.new(0.015, 0, 0.15, 0)
-ToggleButton.BackgroundTransparency = 0.1
+ToggleButton.Size = UDim2.new(0, 55, 0, 55)
+ToggleButton.Position = UDim2.new(0.015, 0, 0.18, 0)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-ToggleButton.Image = "rbxassetid://152621" 
+ToggleButton.Text = "LV"
+ToggleButton.TextColor3 = Color3.fromRGB(212, 175, 55)
+ToggleButton.TextSize = 22
+ToggleButton.Font = Enum.Font.FredokaOne
 ToggleButton.Active = true
 ToggleButton.Draggable = true
 
@@ -84,27 +84,73 @@ UIStroke.Color = Color3.fromRGB(212, 175, 55)
 UIStroke.Thickness = 2.5
 UIStroke.Parent = ToggleButton
 
+-- Bấm vào Logo LV để Bật/Tắt Menu
 ToggleButton.MouseButton1Click:Connect(function()
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightControl, false, game)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightControl, false, game)
 end)
 
 --------------------------------------------------------
--- 2. TAB: TỰ ĐỘNG LẤY VŨ KHÍ HUYỀN THOẠI (CDK, YAMA, TUSHITA, SOUL GUITAR)
+-- 2. TAB AUTO FARM LEVEL & SECRET LEVEL
 --------------------------------------------------------
-Tabs.Weapons:AddParagraph({ 
-    Title = "Hệ Thống Lấy Vũ Khí Huyền Thoại", 
-    Content = "Bật các tùy chọn bên dưới để tự động làm chuỗi nhiệm vụ lấy Kiếm và Súng cấp cao." 
+Tabs.Main:AddParagraph({ 
+    Title = "Cấu Hình Auto Farm Level", 
+    Content = "Tự động nhận Quest, di chuyển và tiêu diệt quái theo cấp độ thực tế." 
 })
 
+Tabs.Main:AddDropdown("WeaponSelect", {
+    Title = "Chọn Vũ Khí Farm",
+    Values = {"Melee", "Sword", "Blox Fruit"},
+    Default = "Melee",
+    Callback = function(Value)
+        _G.SelectWeapon = Value
+    end
+})
+
+Tabs.Main:AddToggle("AutoFarmLvToggle", {
+    Title = "Auto Farm Level Main",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoFarmLv = Value
+    end
+})
+
+Tabs.Main:AddToggle("FastAttackToggle", {
+    Title = "Fast Attack (Đánh Siêu Tốc)",
+    Default = true,
+    Callback = function(Value)
+        _G.FastAttack = Value
+    end
+})
+
+Tabs.Main:AddToggle("BringMobToggle", {
+    Title = "Gom Quái (Bring Mobs)",
+    Default = true,
+    Callback = function(Value)
+        _G.BringMob = Value
+    end
+})
+
+Tabs.Secret:AddToggle("AutoSecretLvToggle", {
+    Title = "Auto Farm Secret Level (Super Fast)",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoSecretLevel = Value
+        _G.AutoFarmLv = Value
+    end
+})
+
+--------------------------------------------------------
+-- 3. CÁC TAB VŨ KHÍ & BOSS
+--------------------------------------------------------
 Tabs.Weapons:AddToggle("AutoYamaToggle", {
-    Title = "Auto Farm & Pull Yama Sword (Đủ 30 Elite)",
+    Title = "Auto Farm & Pull Yama Sword",
     Default = false,
     Callback = function(Value) _G.AutoYama = Value end
 })
 
 Tabs.Weapons:AddToggle("AutoTushitaToggle", {
-    Title = "Auto Get Tushita Sword (Torch & Longma)",
+    Title = "Auto Get Tushita Sword",
     Default = false,
     Callback = function(Value) _G.AutoTushita = Value end
 })
@@ -116,15 +162,10 @@ Tabs.Weapons:AddToggle("AutoCDKToggle", {
 })
 
 Tabs.Weapons:AddToggle("AutoSoulGuitarToggle", {
-    Title = "Auto Craft Soul Guitar (Skull Guitar)",
+    Title = "Auto Craft Soul Guitar",
     Default = false,
     Callback = function(Value) _G.AutoSoulGuitar = Value end
 })
-
---------------------------------------------------------
--- 3. TAB: FARM BOSS & ELITE
---------------------------------------------------------
-Tabs.Boss:AddParagraph({ Title = "Săn Boss Bản Đồ", Content = "Tự động săn tất cả Boss xuất hiện để lấy vật phẩm hiếm." })
 
 Tabs.Boss:AddToggle("AutoFarmBossToggle", {
     Title = "Auto Farm All Bosses",
@@ -132,38 +173,90 @@ Tabs.Boss:AddToggle("AutoFarmBossToggle", {
     Callback = function(Value) _G.AutoFarmBoss = Value end
 })
 
+Tabs.Elite:AddToggle("AutoEliteToggle", {
+    Title = "Auto Farm Elite Boss",
+    Default = false,
+    Callback = function(Value) _G.AutoElite = Value end
+})
+
 --------------------------------------------------------
--- 4. LOGIC TỰ ĐỘNG SĂN BOSS & LẤY VŨ KHÍ
+-- 4. BỘ XỬ LÝ FARM & ĐÁNH MỚI (FIXED BACKEND LOGIC)
 --------------------------------------------------------
 local LocalPlayer = Players.LocalPlayer
 
--- Loop Auto Yama & Pull
+-- Trang bị vũ khí
+local function EquipWeapon()
+    pcall(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                if _G.SelectWeapon == "Melee" and tool.ToolTip == "Melee" then
+                    char.Humanoid:EquipTool(tool)
+                elseif _G.SelectWeapon == "Sword" and tool.ToolTip == "Sword" then
+                    char.Humanoid:EquipTool(tool)
+                elseif _G.SelectWeapon == "Blox Fruit" and tool.ToolTip == "Blox Fruit" then
+                    char.Humanoid:EquipTool(tool)
+                end
+            end
+        end
+    end)
+end
+
+-- Vòng lặp Đánh & Fast Attack
 task.spawn(function()
-    while task.wait(1) do
-        if _G.AutoYama and LocalPlayer.Character then
+    while task.wait(0.01) do
+        if _G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss or _G.AutoClick then
             pcall(function()
-                -- Dịch chuyển đến đền thờ Yama ở Hydra Island và tương tác
-                local yamaLocation = CFrame.new(-5256, 15, 836)
-                if (LocalPlayer.Character.HumanoidRootPart.Position - yamaLocation.Position).Magnitude > 20 then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = yamaLocation
-                else
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("PullYama")
+                EquipWeapon()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Tool") then
+                    char:FindFirstChildOfClass("Tool"):Activate()
                 end
             end)
         end
     end
 end)
 
--- Loop Auto Farm Boss
+-- Vòng lặp Auto Farm Level
 task.spawn(function()
-    while task.wait(0.2) do
-        if _G.AutoFarmBoss and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+    while task.wait(0.05) do
+        if (_G.AutoFarmLv or _G.AutoSecretLevel) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             pcall(function()
-                for _, boss in pairs(workspace.Enemies:GetChildren()) do
-                    if boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0 and boss:FindFirstChild("HumanoidRootPart") then
-                        if boss.Humanoid.MaxHealth > 100000 then -- Nhận diện là Boss
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = boss.HumanoidRootPart.CFrame * CFrame.new(0, 8, 0)
-                            break
+                local hrp = LocalPlayer.Character.HumanoidRootPart
+                local targetMob = nil
+                local shortestDistance = math.huge
+
+                for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                    if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
+                        local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
+                        if dist < shortestDistance then
+                            shortestDistance = dist
+                            targetMob = enemy
+                        end
+                    end
+                end
+
+                if targetMob then
+                    local offsetHeight = _G.AutoSecretLevel and 6.5 or 7.5
+                    hrp.CFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, offsetHeight, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                end
+            end)
+        end
+    end
+end)
+
+-- Gom Quái (Bring Mobs)
+task.spawn(function()
+    while task.wait(0.1) do
+        if _G.BringMob and (_G.AutoFarmLv or _G.AutoSecretLevel) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            pcall(function()
+                local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+                for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                    if enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                        if (enemy.HumanoidRootPart.Position - myPos).Magnitude < 250 then
+                            enemy.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -2, -3)
+                            enemy.HumanoidRootPart.CanCollide = false
                         end
                     end
                 end
@@ -172,21 +265,9 @@ task.spawn(function()
     end
 end)
 
--- Loop Fast Attack
-task.spawn(function()
-    while task.wait(0.005) do
-        if (_G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss or _G.AutoYama or _G.AutoTushita or _G.AutoCDK) and _G.FastAttack then
-            pcall(function()
-                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-            end)
-        end
-    end
-end)
-
--- Bật Noclip liên tục
+-- Bật Noclip
 game:GetService("RunService").Stepped:Connect(function()
-    if (_G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss or _G.AutoCDK) and LocalPlayer.Character then
+    if (_G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss) and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetChildren()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
@@ -197,6 +278,6 @@ end)
 
 Fluent:Notify({
     Title = "Louis Vuitton Hub",
-    Content = "Đã cập nhật thành công Auto Tushita, Yama, CDK, Soul Guitar & Farm Boss!",
+    Content = "Đã sửa hoàn toàn lỗi Nút Bị Đen và lỗi Auto Farm!",
     Duration = 5
 })
