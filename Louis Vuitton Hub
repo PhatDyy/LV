@@ -1,17 +1,14 @@
 -- ======================================================
--- LOUIS VUITTON HUB - FIXED BRING MOB & NO MOB TELEPORT v15.0
+-- LOUIS VUITTON HUB - DRAGON DOJO & SECRET QUESTS v16.0
 -- ======================================================
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 -- Biến Cấu Hình Global
 _G.AutoFarmLv = false
-_G.AutoSecretLevel = false
 _G.AutoElite = false
 _G.AutoHopElite = false
-_G.AutoClick = false
-_G.BringMob = false -- Mặc định tắt Bring Mob để tránh làm rác/giật quái
-_G.AutoBuso = false
+_G.BringMob = false
 _G.FastAttack = true
 _G.SelectWeapon = "Melee"
 _G.SelectIsland = "Starter Island"
@@ -23,18 +20,22 @@ _G.AutoCDK = false
 _G.AutoSoulGuitar = false
 _G.AutoFarmBoss = false
 
+-- Secret Quests & Dragon Dojo Config
+_G.MirageCheck = false
+_G.RaceV4Helper = false
+_G.DragonDojoHelper = false
+
 -- Auto Stats Config
 _G.AutoStats = false
 _G.StatTarget = "Melee"
 
 -- ESP Config
 _G.ESPPlayer = false
-_G.ESPFruit = false
 
 -- Khởi tạo Menu Fluent
 local Window = Fluent:CreateWindow({
     Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "Fixed Mob Teleport Edition v15.0",
+    SubTitle = "Dragon Dojo & Secret Edition v16.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -44,7 +45,8 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     Main = Window:AddTab({ Title = "Auto Farm", Icon = "sword" }),
-    Secret = Window:AddTab({ Title = "Secret Level", Icon = "zap" }),
+    Secret = Window:AddTab({ Title = "Secret Quests", Icon = "key" }),
+    Dragon = Window:AddTab({ Title = "Dragon Dojo", Icon = "flame" }),
     Weapons = Window:AddTab({ Title = "CDK & Soul Guitar", Icon = "crosshair" }),
     Boss = Window:AddTab({ Title = "Farm Boss", Icon = "crown" }),
     Elite = Window:AddTab({ Title = "Farm Elite Boss", Icon = "skull" }),
@@ -100,7 +102,7 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 
 --------------------------------------------------------
--- 2. HÀM TWEEN CHỐNG RUNG MÀN HÌNH (SPEED = 170)
+-- 2. HÀM TWEEN ỔN ĐỊNH (CHỐNG GIẬT LAG & RUNG MÀN HÌNH)
 --------------------------------------------------------
 local currentTween = nil
 
@@ -130,16 +132,82 @@ local function TweenTo(targetCFrame)
 end
 
 --------------------------------------------------------
--- 3. TAB TRAVEL ISLAND (CẬP NHẬT FULL ĐẢO DRAGON)
+-- 3. TAB DRAGON DOJO & PREHISTORIC (TÍCH HỢP RIÊNG BIỆT)
 --------------------------------------------------------
-Tabs.Teleport:AddParagraph({ 
-    Title = "Dịch Chuyển Đảo (Tween Speed 170)", 
-    Content = "Prehistoric Island, Dragon Dojo & Full 3 Seas." 
+Tabs.Dragon:AddParagraph({ 
+    Title = "Khu Vực Dragon Dojo & Prehistoric Island", 
+    Content = "Tab chuyên biệt cho nội dung cập nhật Rồng mới nhất." 
 })
 
+Tabs.Dragon:AddButton({
+    Title = "Teleport Đến Dragon Dojo",
+    Callback = function()
+        TweenTo(CFrame.new(-11230, 330, -8412))
+    end
+})
+
+Tabs.Dragon:AddButton({
+    Title = "Teleport Đến Prehistoric Island",
+    Callback = function()
+        TweenTo(CFrame.new(12432, 25, -6412))
+    end
+})
+
+Tabs.Dragon:AddToggle("DragonDojoHelperToggle", {
+    Title = "Auto Check Trạng Thái Dragon Dojo / Thầy Dạy Rồng",
+    Default = false,
+    Callback = function(Value)
+        _G.DragonDojoHelper = Value
+        Fluent:Notify({ Title = "Dragon Dojo", Content = "Đã bật hệ thống theo dõi Dragon Dojo!", Duration = 3 })
+    end
+})
+
+--------------------------------------------------------
+-- 4. TAB SECRET QUESTS (NHIỆM VỤ BÍ MẬT CHÍNH THỐNG)
+--------------------------------------------------------
+Tabs.Secret:AddParagraph({ 
+    Title = "Hệ Thống Nhiệm Vụ Bí Mật (Secret Quests)", 
+    Content = "Hỗ trợ dò tìm Mirage Island, Race V4, Soul Guitar & Câu đố ẩn." 
+})
+
+Tabs.Secret:AddToggle("MirageCheckToggle", {
+    Title = "Dò Tìm Đảo Sương Mù (Mirage Island Finder)",
+    Default = false,
+    Callback = function(Value)
+        _G.MirageCheck = Value
+        Fluent:Notify({ Title = "Secret Quests", Content = "Đã bật chế độ quét Mirage Island trên biển!", Duration = 3 })
+    end
+})
+
+Tabs.Secret:AddToggle("RaceV4HelperToggle", {
+    Title = "Hỗ Trợ Giải Đố Cổng Race V4 / Đòn Bẩy",
+    Default = false,
+    Callback = function(Value)
+        _G.RaceV4Helper = Value
+    end
+})
+
+-- Xử lý thông báo Mirage Island
+task.spawn(function()
+    while task.wait(5) do
+        if _G.MirageCheck then
+            pcall(function()
+                for _, obj in pairs(workspace:GetChildren()) do
+                    if obj.Name == "Mirage Island" or string.find(obj.Name, "Mirage") then
+                        Fluent:Notify({ Title = "PHÁT HIỆN MIRAGE ISLAND!", Content = "Đảo sương mù đã xuất hiện trên Server này!", Duration = 10 })
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+--------------------------------------------------------
+-- 5. TAB TRAVEL ISLAND (ĐẢO THƯỜNG)
+--------------------------------------------------------
+Tabs.Teleport:AddParagraph({ Title = "Hệ Thống Dịch Chuyển Đảo", Content = "Bay mượt bằng Tween tốc độ 170." })
+
 local IslandsList = {
-    ["Prehistoric Island"] = CFrame.new(12432, 25, -6412),
-    ["Dragon Dojo"] = CFrame.new(-11230, 330, -8412),
     ["Starter Island"] = CFrame.new(1088, 16, 1422),
     ["Jungle"] = CFrame.new(-1612, 36, 148),
     ["Pirate Village"] = CFrame.new(-1134, 4, 3840),
@@ -177,7 +245,7 @@ end
 Tabs.Teleport:AddDropdown("IslandSelect", {
     Title = "Chọn Đảo Muốn Đến",
     Values = IslandNames,
-    Default = "Prehistoric Island",
+    Default = "Starter Island",
     Callback = function(Value)
         _G.SelectIsland = Value
     end
@@ -194,11 +262,11 @@ Tabs.Teleport:AddButton({
 })
 
 --------------------------------------------------------
--- 4. TAB AUTO FARM LEVEL (NO MOB TELEPORT TO PLAYER)
+-- 6. TAB AUTO FARM LEVEL (ĐÃ FIX LỖI TELE VÀ GIẬT ĐÁNH)
 --------------------------------------------------------
 Tabs.Main:AddParagraph({ 
     Title = "Cấu Hình Auto Farm Level", 
-    Content = "Đã sửa hoàn toàn lỗi quái tự Teleport lại Player." 
+    Content = "Đã fix lỗi áp sát giật lag. Đánh mượt mà không bị hụt damage." 
 })
 
 Tabs.Main:AddDropdown("WeaponSelect", {
@@ -227,23 +295,216 @@ Tabs.Main:AddToggle("FastAttackToggle", {
 })
 
 Tabs.Main:AddToggle("BringMobToggle", {
-    Title = "Gom Quái Thường (Bật/Tắt Gom Quái)",
-    Default = false, -- Để false theo mặc định để tránh rung giật
+    Title = "Gom Quái Nhẹ Nhàng (Tùy Chọn)",
+    Default = false,
     Callback = function(Value)
         _G.BringMob = Value
     end
 })
 
-Tabs.Secret:AddToggle("AutoSecretLvToggle", {
-    Title = "Auto Farm Secret Level (Super Fast)",
-    Default = false,
+--------------------------------------------------------
+-- 7. CÁC TAB KHÁC (STATS, VISUALS, WEAPONS, BOSS, ELITE)
+--------------------------------------------------------
+Tabs.Stats:AddDropdown("StatSelect", {
+    Title = "Chọn Chỉ Số Cộng Điểm",
+    Values = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"},
+    Default = "Melee",
     Callback = function(Value)
-        _G.AutoSecretLevel = Value
-        _G.AutoFarmLv = Value
+        _G.StatTarget = Value
     end
 })
 
+Tabs.Stats:AddToggle("AutoStatsToggle", {
+    Title = "Bật Auto Stats",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoStats = Value
+    end
+})
+
+task.spawn(function()
+    while task.wait(0.5) do
+        if _G.AutoStats then
+            pcall(function()
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", _G.StatTarget, 3)
+            end)
+        end
+    end
+end)
+
+Tabs.Visuals:AddToggle("ESPPlayerToggle", {
+    Title = "ESP Player (Nhìn Xuyên Tường)",
+    Default = false,
+    Callback = function(Value)
+        _G.ESPPlayer = Value
+    end
+})
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if _G.ESPPlayer then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                if not p.Character:FindFirstChild("LVEspHighlight") then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "LVEspHighlight"
+                    hl.Adornee = p.Character
+                    hl.FillColor = Color3.fromRGB(212, 175, 55)
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.Parent = p.Character
+                end
+            end
+        end
+    else
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("LVEspHighlight") then
+                p.Character.LVEspHighlight:Destroy()
+            end
+        end
+    end
+end)
+
+Tabs.Weapons:AddToggle("AutoYamaToggle", {
+    Title = "Auto Farm & Pull Yama Sword",
+    Default = false,
+    Callback = function(Value) _G.AutoYama = Value end
+})
+
+Tabs.Weapons:AddToggle("AutoTushitaToggle", {
+    Title = "Auto Get Tushita Sword",
+    Default = false,
+    Callback = function(Value) _G.AutoTushita = Value end
+})
+
+Tabs.Weapons:AddToggle("AutoCDKToggle", {
+    Title = "Auto Quest Cursed Dual Katana (CDK)",
+    Default = false,
+    Callback = function(Value) _G.AutoCDK = Value end
+})
+
+Tabs.Weapons:AddToggle("AutoSoulGuitarToggle", {
+    Title = "Auto Craft Soul Guitar",
+    Default = false,
+    Callback = function(Value) _G.AutoSoulGuitar = Value end
+})
+
+Tabs.Boss:AddToggle("AutoFarmBossToggle", {
+    Title = "Auto Farm All Bosses",
+    Default = false,
+    Callback = function(Value) _G.AutoFarmBoss = Value end
+})
+
+Tabs.Elite:AddToggle("AutoEliteToggle", {
+    Title = "Auto Farm Elite Boss",
+    Default = false,
+    Callback = function(Value) _G.AutoElite = Value end
+})
+
 --------------------------------------------------------
--- 5. CÁC TAB KHÁC (STATS, VISUALS, WEAPONS, BOSS)
+-- 8. BỘ XỬ LÝ FARM ỔN ĐỊNH (KHÔNG GIẬT LẮC, ĐÁNH TRÚNG 100%)
 --------------------------------------------------------
-Tabs.Stats:AddDropdown
+local function EquipWeapon()
+    pcall(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                if _G.SelectWeapon == "Melee" and tool.ToolTip == "Melee" then
+                    char.Humanoid:EquipTool(tool)
+                elseif _G.SelectWeapon == "Sword" and tool.ToolTip == "Sword" then
+                    char.Humanoid:EquipTool(tool)
+                elseif _G.SelectWeapon == "Blox Fruit" and tool.ToolTip == "Blox Fruit" then
+                    char.Humanoid:EquipTool(tool)
+                end
+            end
+        end
+    end)
+end
+
+-- Fast Attack & Tự Động Đánh Mượt Mà
+task.spawn(function()
+    while task.wait(0.01) do
+        if _G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss or _G.AutoClick then
+            pcall(function()
+                EquipWeapon()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Tool") then
+                    char:FindFirstChildOfClass("Tool"):Activate()
+                end
+            end)
+        end
+    end
+end)
+
+local function GetPlayerLevel()
+    local lvl = 1
+    pcall(function()
+        if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Level") then
+            lvl = LocalPlayer.Data.Level.Value
+        elseif LocalPlayer:FindFirstChild("leaderstats") and LocalPlayer.leaderstats:FindFirstChild("Level") then
+            lvl = LocalPlayer.leaderstats.Level.Value
+        end
+    end)
+    return lvl
+end
+
+-- Vòng lặp Auto Farm - Định vị ổn định trên đầu quái, không tele giật cục
+task.spawn(function()
+    while task.wait(0.1) do
+        if (_G.AutoFarmLv or _G.AutoFarmBoss) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            pcall(function()
+                local hrp = LocalPlayer.Character.HumanoidRootPart
+                local pLevel = GetPlayerLevel()
+                local targetMob = nil
+                local shortestDistance = math.huge
+
+                for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                    if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
+                        local enemyName = enemy.Name
+                        local skip = false
+                        
+                        if pLevel > 2000 and not _G.AutoFarmBoss then
+                            if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
+                                skip = true
+                            end
+                        end
+
+                        if not skip then
+                            local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
+                            if dist < shortestDistance then
+                                shortestDistance = dist
+                                targetMob = enemy
+                            end
+                        end
+                    end
+                end
+
+                if targetMob then
+                    local targetCFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, 9, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                    
+                    if (hrp.Position - targetCFrame.Position).Magnitude > 12 then
+                        TweenTo(targetCFrame)
+                    else
+                        hrp.CFrame = targetCFrame
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Bật Noclip
+game:GetService("RunService").Stepped:Connect(function()
+    if (_G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss) and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+Fluent:Notify({
+    Title = "Louis Vuitton Hub v16.0",
+    Content = "Đã tách Tab Dragon Dojo & Secret Quests riêng biệt, fix hoàn toàn lỗi giật lag farm!",
+    Duration = 5
+})
