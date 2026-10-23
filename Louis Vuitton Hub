@@ -1,5 +1,5 @@
 -- ======================================================
--- LOUIS VUITTON HUB - RESTORED TRAVEL & SMOOTH FLY
+-- LOUIS VUITTON HUB - LEVEL SYNCED TWEEN FARM v13.0
 -- ======================================================
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -15,6 +15,7 @@ _G.AutoBuso = false
 _G.FastAttack = true
 _G.SelectWeapon = "Melee"
 _G.SelectIsland = "Starter Island"
+_G.TweenSpeed = 170 -- Tốc độ Tween chuẩn 170
 
 _G.AutoYama = false
 _G.AutoTushita = false
@@ -25,7 +26,7 @@ _G.AutoFarmBoss = false
 -- Khởi tạo Menu Fluent
 local Window = Fluent:CreateWindow({
     Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "Smooth Travel Edition v10.0",
+    SubTitle = "Level Synced Edition v13.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -46,7 +47,7 @@ local Tabs = {
 }
 
 --------------------------------------------------------
--- 1. FIX NÚT LOGO BẬT/TẮT NỔI (VECTOR TEXT BUTTON)
+-- 1. NÚT LOGO BẬT/TẮT NỔI (VECTOR TEXT BUTTON)
 --------------------------------------------------------
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -90,15 +91,38 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 
 --------------------------------------------------------
--- 2. KHÔI PHỤC TAB TRAVEL ISLAND (SMOOTH FLYING)
+-- 2. HÀM TWEEN CHUẨN (SPEED = 170)
+--------------------------------------------------------
+local LocalPlayer = Players.LocalPlayer
+local currentTween = nil
+
+local function TweenTo(targetCFrame)
+    pcall(function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = LocalPlayer.Character.HumanoidRootPart
+            local distance = (hrp.Position - targetCFrame.Position).Magnitude
+            local tweenTime = distance / _G.TweenSpeed
+            local tweenInfo = TweenInfo.new(tweenTime, Enum.EasingStyle.Linear)
+            
+            if currentTween then
+                currentTween:Cancel()
+            end
+            
+            currentTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+            currentTween:Play()
+        end
+    end)
+end
+
+--------------------------------------------------------
+-- 3. TAB TRAVEL ISLAND (TWEEN FLYING SPEED 170)
 --------------------------------------------------------
 Tabs.Teleport:AddParagraph({ 
-    Title = "Dịch Chuyển Đảo (Smooth Fly)", 
-    Content = "Đã bỏ hiệu ứng Teleport giật lag. Nhân vật sẽ bay mượt an toàn đến đảo được chọn." 
+    Title = "Dịch Chuyển Đảo (Tween Speed 170)", 
+    Content = "Bay mượt hoàn toàn bằng Tween đến các đảo." 
 })
 
 local IslandsList = {
-    -- Sea 1
     ["Starter Island"] = CFrame.new(1088, 16, 1422),
     ["Jungle"] = CFrame.new(-1612, 36, 148),
     ["Pirate Village"] = CFrame.new(-1134, 4, 3840),
@@ -111,8 +135,6 @@ local IslandsList = {
     ["Magma Village"] = CFrame.new(-5259, 8, 8503),
     ["Underwater City"] = CFrame.new(3864, 5, -1926),
     ["Fountain City"] = CFrame.new(5127, 59, 4105),
-
-    -- Sea 2
     ["Kingdom of Rose"] = CFrame.new(-456, 73, 2999),
     ["Green Zone"] = CFrame.new(-2448, 73, -3211),
     ["Graveyard"] = CFrame.new(-5414, 48, -725),
@@ -121,8 +143,6 @@ local IslandsList = {
     ["Cursed Ship"] = CFrame.new(923, 125, 32885),
     ["Ice Castle"] = CFrame.new(5560, 28, -6283),
     ["Forgotten Island"] = CFrame.new(-3050, 237, -10148),
-
-    -- Sea 3
     ["Port Town"] = CFrame.new(-290, 7, 5343),
     ["Hydra Island"] = CFrame.new(5749, 610, -282),
     ["Great Tree"] = CFrame.new(2284, 25, -7102),
@@ -146,36 +166,22 @@ Tabs.Teleport:AddDropdown("IslandSelect", {
     end
 })
 
--- Hàm Bay Đến Đảo An Toàn (Smooth Fly)
-local function TravelToIsland(targetCFrame)
-    local player = Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = player.Character.HumanoidRootPart
-        local distance = (hrp.Position - targetCFrame.Position).Magnitude
-        local speed = 320 
-        local tweenInfo = TweenInfo.new(distance / speed, Enum.EasingStyle.Linear)
-        
-        local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
-        tween:Play()
-    end
-end
-
 Tabs.Teleport:AddButton({
-    Title = "Di Chuyển Đến Đảo (Smooth Fly)",
+    Title = "Bay Đến Đảo (Tween 170)",
     Callback = function()
         local targetPos = IslandsList[_G.SelectIsland]
         if targetPos then
-            TravelToIsland(targetPos)
+            TweenTo(targetPos)
         end
     end
 })
 
 --------------------------------------------------------
--- 3. TAB AUTO FARM LEVEL & SECRET LEVEL
+-- 4. TAB AUTO FARM LEVEL & SECRET LEVEL
 --------------------------------------------------------
 Tabs.Main:AddParagraph({ 
     Title = "Cấu Hình Auto Farm Level", 
-    Content = "Tự động nhận Quest, di chuyển và tiêu diệt quái theo cấp độ thực tế." 
+    Content = "Tự động đồng bộ cấp độ nhân vật và bay Tween 170 đến quái cấp cao phù hợp." 
 })
 
 Tabs.Main:AddDropdown("WeaponSelect", {
@@ -188,7 +194,7 @@ Tabs.Main:AddDropdown("WeaponSelect", {
 })
 
 Tabs.Main:AddToggle("AutoFarmLvToggle", {
-    Title = "Auto Farm Level Main",
+    Title = "Auto Farm Level Main (Level Synced)",
     Default = false,
     Callback = function(Value)
         _G.AutoFarmLv = Value
@@ -221,7 +227,7 @@ Tabs.Secret:AddToggle("AutoSecretLvToggle", {
 })
 
 --------------------------------------------------------
--- 4. TAB VŨ KHÍ, BOSS & ELITE
+-- 5. TAB VŨ KHÍ, BOSS & ELITE
 --------------------------------------------------------
 Tabs.Weapons:AddToggle("AutoYamaToggle", {
     Title = "Auto Farm & Pull Yama Sword",
@@ -260,11 +266,8 @@ Tabs.Elite:AddToggle("AutoEliteToggle", {
 })
 
 --------------------------------------------------------
--- 5. BỘ XỬ LÝ BACKEND FARM (CỰC MƯỢT)
+-- 6. BỘ XỬ LÝ FARM ĐỒNG BỘ CẤP ĐỘ & TWEEN 170
 --------------------------------------------------------
-local LocalPlayer = Players.LocalPlayer
-
--- Trang bị vũ khí
 local function EquipWeapon()
     pcall(function()
         local char = LocalPlayer.Character
@@ -283,7 +286,7 @@ local function EquipWeapon()
     end)
 end
 
--- Fast Attack & Tự Động Đánh
+-- Fast Attack
 task.spawn(function()
     while task.wait(0.01) do
         if _G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss or _G.AutoClick then
@@ -298,28 +301,61 @@ task.spawn(function()
     end
 end)
 
--- Vòng lặp Auto Farm Level
+-- Lấy level hiện tại của nhân vật
+local function GetPlayerLevel()
+    local lvl = 1
+    pcall(function()
+        if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Level") then
+            lvl = LocalPlayer.Data.Level.Value
+        elseif LocalPlayer:FindFirstChild("leaderstats") and LocalPlayer.leaderstats:FindFirstChild("Level") then
+            lvl = LocalPlayer.leaderstats.Level.Value
+        end
+    end)
+    return lvl
+end
+
+-- Loop Auto Farm Level Đồng Bộ Cấp Độ & Tween 170
 task.spawn(function()
-    while task.wait(0.05) do
+    while task.wait(0.1) do
         if (_G.AutoFarmLv or _G.AutoSecretLevel) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             pcall(function()
                 local hrp = LocalPlayer.Character.HumanoidRootPart
+                local pLevel = GetPlayerLevel()
                 local targetMob = nil
                 local shortestDistance = math.huge
 
                 for _, enemy in pairs(workspace.Enemies:GetChildren()) do
                     if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
-                        local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
-                        if dist < shortestDistance then
-                            shortestDistance = dist
-                            targetMob = enemy
+                        local enemyName = enemy.Name
+                        local skip = false
+                        
+                        -- Nếu level nhân vật cao (> 2000), tự động bỏ qua các quái cấp thấp ở Sea 1 / Sea 2
+                        if pLevel > 2000 then
+                            if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Gorilla") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") or string.find(enemyName, "Chief") or string.find(enemyName, "Brute") then
+                                skip = true
+                            end
+                        end
+
+                        if not skip then
+                            local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
+                            if dist < shortestDistance then
+                                shortestDistance = dist
+                                targetMob = enemy
+                            end
                         end
                     end
                 end
 
                 if targetMob then
                     local offsetHeight = _G.AutoSecretLevel and 6.5 or 7.5
-                    hrp.CFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, offsetHeight, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                    local targetCFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, offsetHeight, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+                    
+                    -- Dùng Tween 170 để bay đến quái mượt mà
+                    if (hrp.Position - targetCFrame.Position).Magnitude > 15 then
+                        TweenTo(targetCFrame)
+                    else
+                        hrp.CFrame = targetCFrame
+                    end
                 end
             end)
         end
@@ -332,11 +368,20 @@ task.spawn(function()
         if _G.BringMob and (_G.AutoFarmLv or _G.AutoSecretLevel) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             pcall(function()
                 local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+                local pLevel = GetPlayerLevel()
                 for _, enemy in pairs(workspace.Enemies:GetChildren()) do
                     if enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                        if (enemy.HumanoidRootPart.Position - myPos).Magnitude < 250 then
-                            enemy.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -2, -3)
-                            enemy.HumanoidRootPart.CanCollide = false
+                        local enemyName = enemy.Name
+                        local skip = false
+                        if pLevel > 2000 and (string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey")) then
+                            skip = true
+                        end
+                        
+                        if not skip then
+                            if (enemy.HumanoidRootPart.Position - myPos).Magnitude < 250 then
+                                enemy.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -2, -3)
+                                enemy.HumanoidRootPart.CanCollide = false
+                            end
                         end
                     end
                 end
@@ -345,7 +390,7 @@ task.spawn(function()
     end
 end)
 
--- Bật Noclip liên tục khi di chuyển / farm
+-- Bật Noclip liên tục
 game:GetService("RunService").Stepped:Connect(function()
     if (_G.AutoFarmLv or _G.AutoSecretLevel or _G.AutoElite or _G.AutoFarmBoss) and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetChildren()) do
@@ -358,6 +403,6 @@ end)
 
 Fluent:Notify({
     Title = "Louis Vuitton Hub",
-    Content = "Đã khôi phục Travel Island bằng chế độ Bay Mượt (Smooth Fly)!",
+    Content = "Đã cập nhật Auto Farm đồng bộ cấp độ & Tween tốc độ 170!",
     Duration = 5
 })
