@@ -1,8 +1,22 @@
 -- ======================================================
--- LOUIS VUITTON HUB - RANDOM AND RAID EDITION v17.0
+-- LOUIS VUITTON HUB - RANDOM AND RAID EDITION v17.0 (MENU FIX)
 -- ======================================================
 
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local Success, Fluent = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/main.lua"))()
+end)
+
+if not Success or not Fluent then
+    local Success2, Fluent2 = pcall(function()
+        return loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+    end)
+    Fluent = Fluent2
+end
+
+if not Fluent then
+    warn("Không thể tải thư viện Fluent UI! Vui lòng kiểm tra lại kết nối mạng hoặc Executor.")
+    return
+end
 
 -- Biến Cấu Hình Global
 _G.AutoFarmLv = false
@@ -141,7 +155,7 @@ local function TweenTo(targetCFrame)
 end
 
 --------------------------------------------------------
--- 3. TAB MỚI: RANDOM AND RAID
+-- 3. TAB: RANDOM AND RAID
 --------------------------------------------------------
 Tabs.Raid:AddParagraph({ 
     Title = "Hệ Thống Random Trái & Đi Raids", 
@@ -239,15 +253,18 @@ task.spawn(function()
         end
         if _G.AutoStartRaid then
             pcall(function()
-                firetouchinterest(LocalPlayer.Character.HumanoidRootPart, workspace.Map.CircleIsland.RaidStart, 0)
-                firetouchinterest(LocalPlayer.Character.HumanoidRootPart, workspace.Map.CircleIsland.RaidStart, 1)
+                local raidButton = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("CircleIsland") and workspace.Map.CircleIsland:FindFirstChild("RaidStart")
+                if raidButton and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    firetouchinterest(LocalPlayer.Character.HumanoidRootPart, raidButton, 0)
+                    firetouchinterest(LocalPlayer.Character.HumanoidRootPart, raidButton, 1)
+                end
             end)
         end
     end
 end)
 
 --------------------------------------------------------
--- 4. CÁC TAB CŨ GIỮ NGUYÊN (DRAGON, SECRET, TRAVEL, WEAPONS, BOSS, FARM)
+-- 4. CÁC TAB KHÁC
 --------------------------------------------------------
 Tabs.Dragon:AddButton({
     Title = "Teleport Đến Dragon Dojo",
@@ -387,7 +404,7 @@ Tabs.Weapons:AddToggle("AutoTushitaToggle", { Title = "Auto Get Tushita Sword", 
 Tabs.Weapons:AddToggle("AutoCDKToggle", { Title = "Auto Quest Cursed Dual Katana (CDK)", Default = false, Callback = function(V) _G.AutoCDK = V end })
 Tabs.Weapons:AddToggle("AutoSoulGuitarToggle", { Title = "Auto Craft Soul Guitar", Default = false, Callback = function(V) _G.AutoSoulGuitar = V end })
 
-Tabs.Boss:AddToggle("AutoFarmBossToggle", { Title = "Auto Farm All Bosses", Default = false, Callback = function(V) _G.AutoFarmBoss = V = end })
+Tabs.Boss:AddToggle("AutoFarmBossToggle", { Title = "Auto Farm All Bosses", Default = false, Callback = function(V) _G.AutoFarmBoss = V end })
 Tabs.Elite:AddToggle("AutoEliteToggle", { Title = "Auto Farm Elite Boss", Default = false, Callback = function(V) _G.AutoElite = V end })
 
 --------------------------------------------------------
@@ -448,22 +465,24 @@ task.spawn(function()
                 local targetMob = nil
                 local shortestDistance = math.huge
 
-                for _, enemy in pairs(workspace.Enemies:GetChildren()) do
-                    if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
-                        local enemyName = enemy.Name
-                        local skip = false
-                        
-                        if pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
-                            if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
-                                skip = true
+                if workspace:FindFirstChild("Enemies") then
+                    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                        if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
+                            local enemyName = enemy.Name
+                            local skip = false
+                            
+                            if pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
+                                if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
+                                    skip = true
+                                end
                             end
-                        end
 
-                        if not skip then
-                            local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
-                            if dist < shortestDistance then
-                                shortestDistance = dist
-                                targetMob = enemy
+                            if not skip then
+                                local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
+                                if dist < shortestDistance then
+                                    shortestDistance = dist
+                                    targetMob = enemy
+                                end
                             end
                         end
                     end
@@ -494,8 +513,11 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
+-- Chọn sẵn Tab đầu tiên và gửi thông báo
+Window:SelectTab(1)
+
 Fluent:Notify({
     Title = "Louis Vuitton Hub v17.0",
-    Content = "Đã thêm thành công Tab Random and Raid!",
+    Content = "Menu đã được khởi tạo thành công!",
     Duration = 5
 })
