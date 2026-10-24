@@ -1,8 +1,7 @@
 -- ======================================================
--- LOUIS VUITTON HUB - FLUENT EDITION v17.0 (MENU FIXED)
+-- LOUIS VUITTON HUB - FLUENT EDITION v17.0 (FINAL FIXED)
 -- ======================================================
 
--- Tải thư viện Fluent UI an toàn
 local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/main.lua"))()
 
 -- Biến Cấu Hình Global
@@ -50,7 +49,7 @@ local Window = Fluent:CreateWindow({
     SubTitle = "v17.0 - Fixed Menu",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = false, -- Tắt hiệu ứng mờ kính để chống lỗi ẩn menu trên Mobile
+    Acrylic = false,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.RightControl
 })
@@ -471,9 +470,12 @@ task.spawn(function()
                                 end
                             end
 
-                            if not skip me
+                            if not skip then
                                 local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
                                 if dist < shortestDistance then
                                     shortestDistance = dist
                                     targetMob = enemy
-           
+                                end
+                            end
+                        end
+   
