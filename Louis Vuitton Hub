@@ -1,5 +1,5 @@
 -- ======================================================
--- LOUIS VUITTON HUB - RANDOM AND RAID EDITION v17.0 (MENU FIX)
+-- LOUIS VUITTON HUB - RANDOM & RAID & SECRET v17.0 (UPDATED)
 -- ======================================================
 
 local Success, Fluent = pcall(function()
@@ -14,7 +14,7 @@ if not Success or not Fluent then
 end
 
 if not Fluent then
-    warn("Không thể tải thư viện Fluent UI! Vui lòng kiểm tra lại kết nối mạng hoặc Executor.")
+    warn("Không thể tải thư viện Fluent UI!")
     return
 end
 
@@ -24,9 +24,11 @@ _G.AutoElite = false
 _G.AutoHopElite = false
 _G.BringMob = false
 _G.FastAttack = true
+_G.AttackAura = true
 _G.SelectWeapon = "Melee"
 _G.SelectIsland = "Starter Island"
 _G.TweenSpeed = 170
+_G.FarmDistance = 17 -- Đứng trên đầu quái khoảng cách 17 studs
 
 _G.AutoYama = false
 _G.AutoTushita = false
@@ -34,7 +36,8 @@ _G.AutoCDK = false
 _G.AutoSoulGuitar = false
 _G.AutoFarmBoss = false
 
--- Secret & Dragon Config
+-- Secret Quests Config (Lv 2810+)
+_G.AutoSecretQuest2810 = false
 _G.MirageCheck = false
 _G.RaceV4Helper = false
 _G.DragonDojoHelper = false
@@ -57,7 +60,7 @@ _G.ESPPlayer = false
 -- Khởi tạo Menu Fluent
 local Window = Fluent:CreateWindow({
     Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "Random & Raid Edition v17.0",
+    SubTitle = "Secret 2810+ & Attack Aura Edition v17.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -67,8 +70,8 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     Main = Window:AddTab({ Title = "Auto Farm", Icon = "sword" }),
-    Raid = Window:AddTab({ Title = "Random and Raid", Icon = "dices" }),
-    Secret = Window:AddTab({ Title = "Secret Quests", Icon = "key" }),
+    Raid = Window:AddTab({ Title = "Random & Raid", Icon = "dices" }),
+    Secret = Window:AddTab({ Title = "Secret Quests (2810+)", Icon = "key" }),
     Dragon = Window:AddTab({ Title = "Dragon Dojo", Icon = "flame" }),
     Weapons = Window:AddTab({ Title = "CDK & Soul Guitar", Icon = "crosshair" }),
     Boss = Window:AddTab({ Title = "Farm Boss", Icon = "crown" }),
@@ -80,7 +83,7 @@ local Tabs = {
 }
 
 --------------------------------------------------------
--- 1. NÚT LOGO BẬT/TẮT NỔI (VECTOR TEXT BUTTON)
+-- 1. NÚT LOGO BẬT/TẮT GUI (LV BUTTON)
 --------------------------------------------------------
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -125,9 +128,21 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 
 --------------------------------------------------------
--- 2. HÀM TWEEN ỔN ĐỊNH (SPEED = 170)
+-- 2. HÀM TWEEN VÀ DỪNG TWEEN (STOP TWEEN FIX)
 --------------------------------------------------------
 local currentTween = nil
+
+local function StopTween()
+    pcall(function()
+        if currentTween then
+            currentTween:Cancel()
+            currentTween = nil
+        end
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.PlatformStand = false
+        end
+    end)
+end
 
 local function TweenTo(targetCFrame)
     pcall(function()
@@ -155,14 +170,83 @@ local function TweenTo(targetCFrame)
 end
 
 --------------------------------------------------------
--- 3. TAB: RANDOM AND RAID
+-- 3. TAB TAB MAIN (FARM LEVEL & ATTACK AURA)
+--------------------------------------------------------
+Tabs.Main:AddDropdown("WeaponSelect", {
+    Title = "Chọn Vũ Khí Farm",
+    Values = {"Melee", "Sword", "Blox Fruit"},
+    Default = "Melee",
+    Callback = function(Value) _G.SelectWeapon = Value end
+})
+
+Tabs.Main:AddToggle("AutoFarmLvToggle", {
+    Title = "Auto Farm Level (Đứng Trên Đầu Quái 17 Studs)",
+    Default = false,
+    Callback = function(Value) 
+        _G.AutoFarmLv = Value 
+        if not Value then StopTween() end
+    end
+})
+
+Tabs.Main:AddToggle("FastAttackToggle", {
+    Title = "Fast Attack (Tốc Độ Đánh Nhanh)",
+    Default = true,
+    Callback = function(Value) _G.FastAttack = Value end
+})
+
+Tabs.Main:AddToggle("AttackAuraToggle", {
+    Title = "Attack Aura (Đánh Diện Rộng Tự Động)",
+    Default = true,
+    Callback = function(Value) _G.AttackAura = Value end
+})
+
+Tabs.Main:AddButton({
+    Title = "Stop Tween (Dừng Bay Lập Tức)",
+    Callback = function()
+        StopTween()
+        Fluent:Notify({ Title = "Stop Tween", Content = "Đã hủy toàn bộ Tween!", Duration = 3 })
+    end
+})
+
+--------------------------------------------------------
+-- 4. TAB SECRET QUESTS (CHO LV 2810+)
+--------------------------------------------------------
+Tabs.Secret:AddParagraph({ 
+    Title = "Chuỗi Nhiệm Vụ Ẩn (Secret Quest Lv 2810+)", 
+    Content = "Hỗ trợ làm tự động chuỗi nhiệm vụ ẩn mới cập nhật dành riêng cho người chơi từ Level 2810 trở lên." 
+})
+
+Tabs.Secret:AddToggle("AutoSecret2810Toggle", {
+    Title = "Auto Secret Quest (Level 2810+)",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoSecretQuest2810 = Value
+        if not Value then StopTween() end
+    end
+})
+
+Tabs.Secret:AddButton({
+    Title = "Teleport Đến NPC Nhiệm Vụ Ẩn 2810+",
+    Callback = function()
+        -- Tới vị trí NPC nhận Secret Quest Lv 2810+
+        TweenTo(CFrame.new(-12500, 340, -8500))
+    end
+})
+
+Tabs.Secret:AddToggle("MirageCheckToggle", {
+    Title = "Dò Tìm Đảo Sương Mù (Mirage Island Finder)",
+    Default = false,
+    Callback = function(Value) _G.MirageCheck = Value end
+})
+
+--------------------------------------------------------
+-- 5. TAB RANDOM AND RAID
 --------------------------------------------------------
 Tabs.Raid:AddParagraph({ 
     Title = "Hệ Thống Random Trái & Đi Raids", 
     Content = "Tự động mua Trái Ác Quỷ ngẫu nhiên, cất Rương và Auto Farm Raid." 
 })
 
--- RANDOM FRUIT SECTION
 Tabs.Raid:AddButton({
     Title = "Random Trái Ác Quỷ Ngay",
     Callback = function()
@@ -173,63 +257,32 @@ Tabs.Raid:AddButton({
     end
 })
 
-Tabs.Raid:AddToggle("AutoRandomToggle", {
-    Title = "Auto Random Fruit Khi Đủ Thời Gian",
-    Default = false,
-    Callback = function(Value)
-        _G.AutoRandomFruit = Value
-    end
-})
+Tabs.Raid:AddToggle("AutoRandomToggle", { Title = "Auto Random Fruit Khi Đủ Thời Gian", Default = false, Callback = function(V) _G.AutoRandomFruit = V end })
+Tabs.Raid:AddToggle("AutoStoreToggle", { Title = "Auto Store Fruit (Tự Động Cất Rương)", Default = false, Callback = function(V) _G.AutoStoreFruit = V end })
 
-Tabs.Raid:AddToggle("AutoStoreToggle", {
-    Title = "Auto Store Fruit (Tự Động Cất Trái Vô Rương)",
-    Default = false,
-    Callback = function(Value)
-        _G.AutoStoreFruit = Value
-    end
-})
-
--- RAID SECTION
 Tabs.Raid:AddDropdown("RaidChipSelect", {
     Title = "Chọn Loại Chip Raid",
     Values = {"Flame", "Ice", "Quake", "Light", "Dark", "Spider", "Rumble", "Magma", "Buddha", "Sand", "Dough"},
     Default = "Flame",
-    Callback = function(Value)
-        _G.SelectRaidChip = Value
-    end
+    Callback = function(Value) _G.SelectRaidChip = Value end
 })
 
-Tabs.Raid:AddToggle("AutoBuyChipToggle", {
-    Title = "Auto Buy Chip Raid",
-    Default = false,
-    Callback = function(Value)
-        _G.AutoBuyChip = Value
-    end
+Tabs.Raid:AddToggle("AutoBuyChipToggle", { Title = "Auto Buy Chip Raid", Default = false, Callback = function(V) _G.AutoBuyChip = V end })
+Tabs.Raid:AddToggle("AutoStartRaidToggle", { Title = "Auto Start Raid (Bắt Đầu Raid)", Default = false, Callback = function(V) _G.AutoStartRaid = V end })
+Tabs.Raid:AddToggle("AutoFarmRaidToggle", { 
+    Title = "Auto Farm Raid (Bay Xoá Đảo Raid)", 
+    Default = false, 
+    Callback = function(V) 
+        _G.AutoFarmRaid = V 
+        if not V then StopTween() end
+    end 
 })
 
-Tabs.Raid:AddToggle("AutoStartRaidToggle", {
-    Title = "Auto Start Raid (Bắt Đầu Raid)",
-    Default = false,
-    Callback = function(Value)
-        _G.AutoStartRaid = Value
-    end
-})
-
-Tabs.Raid:AddToggle("AutoFarmRaidToggle", {
-    Title = "Auto Farm Raid (Bay Xoá Đảo Raid)",
-    Default = false,
-    Callback = function(Value)
-        _G.AutoFarmRaid = Value
-    end
-})
-
--- Loop Random & Store
+-- Loops Random, Store, Raid
 task.spawn(function()
     while task.wait(1) do
         if _G.AutoRandomFruit then
-            pcall(function()
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Cousin", "Buy")
-            end)
+            pcall(function() game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Cousin", "Buy") end)
         end
         if _G.AutoStoreFruit then
             pcall(function()
@@ -243,13 +296,10 @@ task.spawn(function()
     end
 end)
 
--- Loop Raid Backend
 task.spawn(function()
     while task.wait(1) do
         if _G.AutoBuyChip then
-            pcall(function()
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("RaidsNpc", "Select", _G.SelectRaidChip)
-            end)
+            pcall(function() game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("RaidsNpc", "Select", _G.SelectRaidChip) end)
         end
         if _G.AutoStartRaid then
             pcall(function()
@@ -264,23 +314,10 @@ task.spawn(function()
 end)
 
 --------------------------------------------------------
--- 4. CÁC TAB KHÁC
+-- 6. CÁC TAB CỔ ĐIỂN VÀ TELEPORT
 --------------------------------------------------------
-Tabs.Dragon:AddButton({
-    Title = "Teleport Đến Dragon Dojo",
-    Callback = function() TweenTo(CFrame.new(-11230, 330, -8412)) end
-})
-
-Tabs.Dragon:AddButton({
-    Title = "Teleport Đến Prehistoric Island",
-    Callback = function() TweenTo(CFrame.new(12432, 25, -6412)) end
-})
-
-Tabs.Secret:AddToggle("MirageCheckToggle", {
-    Title = "Dò Tìm Đảo Sương Mù (Mirage Island Finder)",
-    Default = false,
-    Callback = function(Value) _G.MirageCheck = Value end
-})
+Tabs.Dragon:AddButton({ Title = "Teleport Đến Dragon Dojo", Callback = function() TweenTo(CFrame.new(-11230, 330, -8412)) end })
+Tabs.Dragon:AddButton({ Title = "Teleport Đến Prehistoric Island", Callback = function() TweenTo(CFrame.new(12432, 25, -6412)) end })
 
 local IslandsList = {
     ["Starter Island"] = CFrame.new(1088, 16, 1422),
@@ -315,52 +352,11 @@ local IslandsList = {
 local IslandNames = {}
 for name, _ in pairs(IslandsList) do table.insert(IslandNames, name) end
 
-Tabs.Teleport:AddDropdown("IslandSelect", {
-    Title = "Chọn Đảo Muốn Đến",
-    Values = IslandNames,
-    Default = "Starter Island",
-    Callback = function(Value) _G.SelectIsland = Value end
-})
+Tabs.Teleport:AddDropdown("IslandSelect", { Title = "Chọn Đảo Muốn Đến", Values = IslandNames, Default = "Starter Island", Callback = function(V) _G.SelectIsland = V end })
+Tabs.Teleport:AddButton({ Title = "Bay Đến Đảo (Tween 170)", Callback = function() local pos = IslandsList[_G.SelectIsland] if pos then TweenTo(pos) end end })
 
-Tabs.Teleport:AddButton({
-    Title = "Bay Đến Đảo (Tween 170)",
-    Callback = function()
-        local targetPos = IslandsList[_G.SelectIsland]
-        if targetPos then TweenTo(targetPos) end
-    end
-})
-
-Tabs.Main:AddDropdown("WeaponSelect", {
-    Title = "Chọn Vũ Khí Farm",
-    Values = {"Melee", "Sword", "Blox Fruit"},
-    Default = "Melee",
-    Callback = function(Value) _G.SelectWeapon = Value end
-})
-
-Tabs.Main:AddToggle("AutoFarmLvToggle", {
-    Title = "Auto Farm Level Main",
-    Default = false,
-    Callback = function(Value) _G.AutoFarmLv = Value end
-})
-
-Tabs.Main:AddToggle("FastAttackToggle", {
-    Title = "Fast Attack (Đánh Siêu Tốc)",
-    Default = true,
-    Callback = function(Value) _G.FastAttack = Value end
-})
-
-Tabs.Stats:AddDropdown("StatSelect", {
-    Title = "Chọn Chỉ Số Cộng Điểm",
-    Values = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"},
-    Default = "Melee",
-    Callback = function(Value) _G.StatTarget = Value end
-})
-
-Tabs.Stats:AddToggle("AutoStatsToggle", {
-    Title = "Bật Auto Stats",
-    Default = false,
-    Callback = function(Value) _G.AutoStats = Value end
-})
+Tabs.Stats:AddDropdown("StatSelect", { Title = "Chọn Chỉ Số Cộng Điểm", Values = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"}, Default = "Melee", Callback = function(V) _G.StatTarget = V end })
+Tabs.Stats:AddToggle("AutoStatsToggle", { Title = "Bật Auto Stats", Default = false, Callback = function(V) _G.AutoStats = V end })
 
 task.spawn(function()
     while task.wait(0.5) do
@@ -370,11 +366,7 @@ task.spawn(function()
     end
 end)
 
-Tabs.Visuals:AddToggle("ESPPlayerToggle", {
-    Title = "ESP Player (Nhìn Xuyên Tường)",
-    Default = false,
-    Callback = function(Value) _G.ESPPlayer = Value end
-})
+Tabs.Visuals:AddToggle("ESPPlayerToggle", { Title = "ESP Player (Nhìn Xuyên Tường)", Default = false, Callback = function(V) _G.ESPPlayer = V end })
 
 game:GetService("RunService").RenderStepped:Connect(function()
     if _G.ESPPlayer then
@@ -404,11 +396,11 @@ Tabs.Weapons:AddToggle("AutoTushitaToggle", { Title = "Auto Get Tushita Sword", 
 Tabs.Weapons:AddToggle("AutoCDKToggle", { Title = "Auto Quest Cursed Dual Katana (CDK)", Default = false, Callback = function(V) _G.AutoCDK = V end })
 Tabs.Weapons:AddToggle("AutoSoulGuitarToggle", { Title = "Auto Craft Soul Guitar", Default = false, Callback = function(V) _G.AutoSoulGuitar = V end })
 
-Tabs.Boss:AddToggle("AutoFarmBossToggle", { Title = "Auto Farm All Bosses", Default = false, Callback = function(V) _G.AutoFarmBoss = V end })
-Tabs.Elite:AddToggle("AutoEliteToggle", { Title = "Auto Farm Elite Boss", Default = false, Callback = function(V) _G.AutoElite = V end })
+Tabs.Boss:AddToggle("AutoFarmBossToggle", { Title = "Auto Farm All Bosses", Default = false, Callback = function(V) _G.AutoFarmBoss = V if not V then StopTween() end end })
+Tabs.Elite:AddToggle("AutoEliteToggle", { Title = "Auto Farm Elite Boss", Default = false, Callback = function(V) _G.AutoElite = V if not V then StopTween() end end })
 
 --------------------------------------------------------
--- 5. BỘ XỬ LÝ BACKEND FARM & RAID
+-- 7. BACKEND FARM, ATTACK AURA & NHOI QUÁI
 --------------------------------------------------------
 local function EquipWeapon()
     pcall(function()
@@ -428,15 +420,31 @@ local function EquipWeapon()
     end)
 end
 
--- Fast Attack
+-- ATTACK AURA & FAST ATTACK (TỰ ĐỘNG ĐÁNH TẤT CẢ QUÁI XUNG QUANH)
 task.spawn(function()
     while task.wait(0.01) do
-        if _G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss or _G.AutoFarmRaid then
+        if _G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss or _G.AutoFarmRaid or _G.AutoSecretQuest2810 then
             pcall(function()
                 EquipWeapon()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChildOfClass("Tool") then
                     char:FindFirstChildOfClass("Tool"):Activate()
+                end
+
+                -- ATTACK AURA BACKEND
+                if _G.AttackAura and char and char:FindFirstChild("HumanoidRootPart") then
+                    local myPos = char.HumanoidRootPart.Position
+                    if workspace:FindFirstChild("Enemies") then
+                        for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                            if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
+                                local dist = (enemy.HumanoidRootPart.Position - myPos).Magnitude
+                                if dist <= 45 then
+                                    -- Gửi tín hiệu gây đòn đánh diện rộng
+                                    game:GetService("VirtualUser"):Button1Down(Vector2.new(0,0))
+                                end
+                            end
+                        end
+                    end
                 end
             end)
         end
@@ -455,10 +463,10 @@ local function GetPlayerLevel()
     return lvl
 end
 
--- Auto Farm Level & Auto Farm Raid
+-- AUTO FARM LEVEL & SECRET QUESTS (BAY TRÊN ĐẦU QUÁI CÁCH 17 STUDS)
 task.spawn(function()
-    while task.wait(0.1) do
-        if (_G.AutoFarmLv or _G.AutoFarmBoss or _G.AutoFarmRaid) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+    while task.wait(0.05) do
+        if (_G.AutoFarmLv or _G.AutoFarmBoss or _G.AutoFarmRaid or _G.AutoSecretQuest2810) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             pcall(function()
                 local hrp = LocalPlayer.Character.HumanoidRootPart
                 local pLevel = GetPlayerLevel()
@@ -471,53 +479,7 @@ task.spawn(function()
                             local enemyName = enemy.Name
                             local skip = false
                             
-                            if pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
-                                if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
-                                    skip = true
-                                end
-                            end
-
-                            if not skip then
-                                local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
-                                if dist < shortestDistance then
-                                    shortestDistance = dist
-                                    targetMob = enemy
-                                end
-                            end
-                        end
-                    end
-                end
-
-                if targetMob then
-                    local targetCFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, 9, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-                    
-                    if (hrp.Position - targetCFrame.Position).Magnitude > 12 then
-                        TweenTo(targetCFrame)
-                    else
-                        hrp.CFrame = targetCFrame
-                    end
-                end
-            end)
-        end
-    end
-end)
-
--- Bật Noclip
-game:GetService("RunService").Stepped:Connect(function()
-    if (_G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss or _G.AutoFarmRaid) and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
--- Chọn sẵn Tab đầu tiên và gửi thông báo
-Window:SelectTab(1)
-
-Fluent:Notify({
-    Title = "Louis Vuitton Hub v17.0",
-    Content = "Menu đã được khởi tạo thành công!",
-    Duration = 5
-})
+                            if pLevel >= 2810 and _G.AutoSecretQuest2810 then
+                                -- Ưu tiên quái làm Secret Quest 2810+
+                            elseif pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
+                                if string.find(enemyName,
