@@ -1,21 +1,24 @@
 -- ======================================================
--- LOUIS VUITTON HUB - RANDOM & RAID & SECRET v17.0 (MENU FIX ALL)
+-- LOUIS VUITTON HUB - RANDOM & RAID & SECRET v17.0 (ULTIMATE MENU FIX)
 -- ======================================================
 
--- 1. LOAD THƯ VIỆN BẰNG LINK MIRROR AN TOÀN
-local Fluent = nil
-local Success, Err = pcall(function()
+-- 1. LOAD THƯ VIỆN FLUENT CHUẨN KÈM ADDONS
+local Fluent, SaveManager, InterfaceManager
+local Success = pcall(function()
     Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+    SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/Addons/SaveManager.lua"))()
+    InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/Addons/InterfaceManager.lua"))()
 end)
 
 if not Success or not Fluent then
+    -- Fallback link dự phòng 2
     pcall(function()
         Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/main.lua"))()
     end)
 end
 
 if not Fluent then
-    warn("Lỗi: Không thể kết nối tới thư viện Fluent UI! Vui lòng kiểm tra lại mạng.")
+    warn("Lỗi: Không thể kết nối tới Github để tải UI! Hãy kiểm tra lại kết nối mạng/VPN.")
     return
 end
 
@@ -64,7 +67,7 @@ local Window = Fluent:CreateWindow({
     SubTitle = "Secret 2810+ & Attack Aura Edition v17.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = false, -- Tắt Acrylic để chống lag/lỗi trên Android Executor
+    Acrylic = false, -- Tắt Acrylic để đảm bảo hiện 100% trên Android/PC
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.RightControl
 })
@@ -84,7 +87,7 @@ local Tabs = {
 }
 
 --------------------------------------------------------
--- 1. NÚT LOGO BẬT/TẮT GUI (LV BUTTON)
+-- 1. NÚT LOGO BẬT/TẮT GUI (LV BUTTON NỔI)
 --------------------------------------------------------
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -478,7 +481,4 @@ task.spawn(function()
                             local skip = false
                             
                             if pLevel >= 2810 and _G.AutoSecretQuest2810 then
-                                -- Ưu tiên quái Secret Quest 2810+
-                            elseif pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
-                                if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
-     
+                                -- Ưu tiên quái Secret
