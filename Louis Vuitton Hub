@@ -1,20 +1,21 @@
 -- ======================================================
--- LOUIS VUITTON HUB - RANDOM & RAID & SECRET v17.0 (UPDATED)
+-- LOUIS VUITTON HUB - RANDOM & RAID & SECRET v17.0 (MENU FIX ALL)
 -- ======================================================
 
-local Success, Fluent = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/main.lua"))()
+-- 1. LOAD THƯ VIỆN BẰNG LINK MIRROR AN TOÀN
+local Fluent = nil
+local Success, Err = pcall(function()
+    Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 end)
 
 if not Success or not Fluent then
-    local Success2, Fluent2 = pcall(function()
-        return loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+    pcall(function()
+        Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/main.lua"))()
     end)
-    Fluent = Fluent2
 end
 
 if not Fluent then
-    warn("Không thể tải thư viện Fluent UI!")
+    warn("Lỗi: Không thể kết nối tới thư viện Fluent UI! Vui lòng kiểm tra lại mạng.")
     return
 end
 
@@ -28,7 +29,7 @@ _G.AttackAura = true
 _G.SelectWeapon = "Melee"
 _G.SelectIsland = "Starter Island"
 _G.TweenSpeed = 170
-_G.FarmDistance = 17 -- Đứng trên đầu quái khoảng cách 17 studs
+_G.FarmDistance = 17
 
 _G.AutoYama = false
 _G.AutoTushita = false
@@ -63,7 +64,7 @@ local Window = Fluent:CreateWindow({
     SubTitle = "Secret 2810+ & Attack Aura Edition v17.0",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = true,
+    Acrylic = false, -- Tắt Acrylic để chống lag/lỗi trên Android Executor
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.RightControl
 })
@@ -128,7 +129,7 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 
 --------------------------------------------------------
--- 2. HÀM TWEEN VÀ DỪNG TWEEN (STOP TWEEN FIX)
+-- 2. HÀM TWEEN VÀ DỪNG TWEEN
 --------------------------------------------------------
 local currentTween = nil
 
@@ -170,7 +171,7 @@ local function TweenTo(targetCFrame)
 end
 
 --------------------------------------------------------
--- 3. TAB TAB MAIN (FARM LEVEL & ATTACK AURA)
+-- 3. TAB MAIN (FARM LEVEL & ATTACK AURA)
 --------------------------------------------------------
 Tabs.Main:AddDropdown("WeaponSelect", {
     Title = "Chọn Vũ Khí Farm",
@@ -180,7 +181,7 @@ Tabs.Main:AddDropdown("WeaponSelect", {
 })
 
 Tabs.Main:AddToggle("AutoFarmLvToggle", {
-    Title = "Auto Farm Level (Đứng Trên Đầu Quái 17 Studs)",
+    Title = "Auto Farm Level (Cách Đỉnh Đầu Quái 17 Studs)",
     Default = false,
     Callback = function(Value) 
         _G.AutoFarmLv = Value 
@@ -228,7 +229,6 @@ Tabs.Secret:AddToggle("AutoSecret2810Toggle", {
 Tabs.Secret:AddButton({
     Title = "Teleport Đến NPC Nhiệm Vụ Ẩn 2810+",
     Callback = function()
-        -- Tới vị trí NPC nhận Secret Quest Lv 2810+
         TweenTo(CFrame.new(-12500, 340, -8500))
     end
 })
@@ -420,7 +420,7 @@ local function EquipWeapon()
     end)
 end
 
--- ATTACK AURA & FAST ATTACK (TỰ ĐỘNG ĐÁNH TẤT CẢ QUÁI XUNG QUANH)
+-- ATTACK AURA & FAST ATTACK
 task.spawn(function()
     while task.wait(0.01) do
         if _G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss or _G.AutoFarmRaid or _G.AutoSecretQuest2810 then
@@ -431,7 +431,6 @@ task.spawn(function()
                     char:FindFirstChildOfClass("Tool"):Activate()
                 end
 
-                -- ATTACK AURA BACKEND
                 if _G.AttackAura and char and char:FindFirstChild("HumanoidRootPart") then
                     local myPos = char.HumanoidRootPart.Position
                     if workspace:FindFirstChild("Enemies") then
@@ -439,7 +438,6 @@ task.spawn(function()
                             if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
                                 local dist = (enemy.HumanoidRootPart.Position - myPos).Magnitude
                                 if dist <= 45 then
-                                    -- Gửi tín hiệu gây đòn đánh diện rộng
                                     game:GetService("VirtualUser"):Button1Down(Vector2.new(0,0))
                                 end
                             end
@@ -463,7 +461,7 @@ local function GetPlayerLevel()
     return lvl
 end
 
--- AUTO FARM LEVEL & SECRET QUESTS (BAY TRÊN ĐẦU QUÁI CÁCH 17 STUDS)
+-- AUTO FARM LEVEL & SECRET QUESTS (CÁCH ĐẦU QUÁI 17 STUDS)
 task.spawn(function()
     while task.wait(0.05) do
         if (_G.AutoFarmLv or _G.AutoFarmBoss or _G.AutoFarmRaid or _G.AutoSecretQuest2810) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -480,6 +478,7 @@ task.spawn(function()
                             local skip = false
                             
                             if pLevel >= 2810 and _G.AutoSecretQuest2810 then
-                                -- Ưu tiên quái làm Secret Quest 2810+
+                                -- Ưu tiên quái Secret Quest 2810+
                             elseif pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
-                                if string.find(enemyName,
+                                if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
+     
