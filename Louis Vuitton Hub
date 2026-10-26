@@ -1,18 +1,8 @@
 -- ======================================================
--- LOUIS VUITTON HUB - FLUENT EDITION v17.1 (FIX MENU)
+-- LOUIS VUITTON HUB - RAYFIELD EDITION (FIXED NO UI)
 -- ======================================================
 
--- Dọn dẹp GUI cũ nếu còn kẹt lại
-pcall(function()
-    if game:GetService("CoreGui"):FindFirstChild("LVHubToggleGui") then
-        game:GetService("CoreGui").LVHubToggleGui:Destroy()
-    end
-    if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("LVHubToggleGui") then
-        game:GetService("Players").LocalPlayer.PlayerGui.LVHubToggleGui:Destroy()
-    end
-end)
-
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/main/main.lua"))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Biến Cấu Hình Global
 _G.AutoFarmLv = false
@@ -35,8 +25,6 @@ _G.AutoFarmBoss = false
 -- Secret Quests Config (Lv 2810+)
 _G.AutoSecretQuest2810 = false
 _G.MirageCheck = false
-_G.RaceV4Helper = false
-_G.DragonDojoHelper = false
 
 -- Random & Raid Config
 _G.AutoRandomFruit = false
@@ -53,77 +41,37 @@ _G.StatTarget = "Melee"
 -- ESP Config
 _G.ESPPlayer = false
 
--- Khởi tạo Menu Fluent (Đảm bảo hiển thị ngay khi chạy)
-local Window = Fluent:CreateWindow({
-    Title = "Louis Vuitton Hub | Blox Fruits",
-    SubTitle = "v17.1 - Fixed Menu UI",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = false,
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.RightControl
+-- Khởi tạo Window Rayfield
+local Window = Rayfield:CreateWindow({
+    Name = "Louis Vuitton Hub | Blox Fruits v17.2",
+    LoadingTitle = "Đang khởi động Louis Vuitton Hub...",
+    LoadingSubtitle = "By LV Team",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "LVHubConfig",
+        FileName = "BloxFruitsConfig"
+    },
+    KeySystem = false,
 })
 
-local Tabs = {
-    Main = Window:AddTab({ Title = "Auto Farm", Icon = "sword" }),
-    Raid = Window:AddTab({ Title = "Random & Raid", Icon = "dices" }),
-    Secret = Window:AddTab({ Title = "Secret Quests (2810+)", Icon = "key" }),
-    Dragon = Window:AddTab({ Title = "Dragon Dojo", Icon = "flame" }),
-    Weapons = Window:AddTab({ Title = "CDK & Soul Guitar", Icon = "crosshair" }),
-    Boss = Window:AddTab({ Title = "Farm Boss", Icon = "crown" }),
-    Elite = Window:AddTab({ Title = "Farm Elite Boss", Icon = "skull" }),
-    Teleport = Window:AddTab({ Title = "Travel Island", Icon = "map-pin" }),
-    Stats = Window:AddTab({ Title = "Auto Stats", Icon = "trending-up" }),
-    Visuals = Window:AddTab({ Title = "ESP / Visuals", Icon = "eye" }),
-    Misc = Window:AddTab({ Title = "Items & Fruit", Icon = "gift" })
-}
+-- Tạo các Tab
+local TabMain = Window:CreateTab("Auto Farm", "sword")
+local TabRaid = Window:CreateTab("Random & Raid", "dice")
+local TabSecret = Window:CreateTab("Secret Quests (2810+)", "key")
+local TabDragon = Window:CreateTab("Dragon Dojo", "flame")
+local TabWeapons = Window:CreateTab("CDK & Soul Guitar", "crosshair")
+local TabBoss = Window:CreateTab("Farm Boss", "crown")
+local TabElite = Window:CreateTab("Farm Elite", "skull")
+local TabTeleport = Window:CreateTab("Travel Island", "map-pin")
+local TabStats = Window:CreateTab("Auto Stats", "trending-up")
+local TabVisuals = Window:CreateTab("ESP / Visuals", "eye")
 
 --------------------------------------------------------
--- 1. NÚT LOGO BẬT/TẮT GUI (NÚT NỔI LV) - ĐÃ AN TOÀN HƠN
+-- HÀM TWEEN VÀ DỪNG TWEEN
 --------------------------------------------------------
-local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
-
-local ScreenGui = Instance.new("ScreenGui")
-local ToggleButton = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
-local UIStroke = Instance.new("UIStroke")
-
-ScreenGui.Name = "LVHubToggleGui"
--- Sử dụng PlayerGui để tránh lỗi chặn CoreGui ở một số executor
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.ResetOnSpawn = false
-
-ToggleButton.Name = "LVLogoButton"
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 55, 0, 55)
-ToggleButton.Position = UDim2.new(0.015, 0, 0.18, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-ToggleButton.Text = "LV"
-ToggleButton.TextColor3 = Color3.fromRGB(212, 175, 55)
-ToggleButton.TextSize = 22
-ToggleButton.Font = Enum.Font.FredokaOne
-ToggleButton.Active = true
-ToggleButton.Draggable = true
-
-UICorner.CornerRadius = UDim.new(1, 0)
-UICorner.Parent = ToggleButton
-
-UIStroke.Color = Color3.fromRGB(212, 175, 55)
-UIStroke.Thickness = 2.5
-UIStroke.Parent = ToggleButton
-
-ToggleButton.MouseButton1Click:Connect(function()
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightControl, false, game)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightControl, false, game)
-end)
-
---------------------------------------------------------
--- 2. HÀM TWEEN VÀ DỪNG TWEEN
---------------------------------------------------------
 local currentTween = nil
 
 local function StopTween()
@@ -164,111 +112,134 @@ local function TweenTo(targetCFrame)
 end
 
 --------------------------------------------------------
--- 3. TAB MAIN (FARM LEVEL & ATTACK AURA)
+-- TAB MAIN
 --------------------------------------------------------
-Tabs.Main:AddDropdown("WeaponSelect", {
-    Title = "Chọn Vũ Khí Farm",
-    Values = {"Melee", "Sword", "Blox Fruit"},
-    Default = "Melee",
-    Callback = function(Value) _G.SelectWeapon = Value end
+TabMain:CreateDropdown({
+    Name = "Chọn Vũ Khí Farm",
+    Options = {"Melee", "Sword", "Blox Fruit"},
+    CurrentOption = "Melee",
+    Flag = "WeaponSelect",
+    Callback = function(Value)
+        _G.SelectWeapon = Value
+    end,
 })
 
-Tabs.Main:AddToggle("AutoFarmLvToggle", {
-    Title = "Auto Farm Level (Cách Đỉnh Đầu Quái 17 Studs)",
-    Default = false,
-    Callback = function(Value) 
-        _G.AutoFarmLv = Value 
+TabMain:CreateToggle({
+    Name = "Auto Farm Level (Cách Đỉnh Đầu Quái 17 Studs)",
+    CurrentValue = false,
+    Flag = "AutoFarmLv",
+    Callback = function(Value)
+        _G.AutoFarmLv = Value
         if not Value then StopTween() end
-    end
+    end,
 })
 
-Tabs.Main:AddToggle("FastAttackToggle", {
-    Title = "Fast Attack (Đánh Siêu Tốc)",
-    Default = true,
-    Callback = function(Value) _G.FastAttack = Value end
+TabMain:CreateToggle({
+    Name = "Fast Attack (Đánh Siêu Tốc)",
+    CurrentValue = true,
+    Flag = "FastAttack",
+    Callback = function(Value)
+        _G.FastAttack = Value
+    end,
 })
 
-Tabs.Main:AddToggle("AttackAuraToggle", {
-    Title = "Attack Aura (Đánh Diện Rộng Tự Động)",
-    Default = true,
-    Callback = function(Value) _G.AttackAura = Value end
+TabMain:CreateToggle({
+    Name = "Attack Aura (Đánh Diện Rộng Tự Động)",
+    CurrentValue = true,
+    Flag = "AttackAura",
+    Callback = function(Value)
+        _G.AttackAura = Value
+    end,
 })
 
-Tabs.Main:AddButton({
-    Title = "Stop Tween (Dừng Bay Lập Tức)",
+TabMain:CreateButton({
+    Name = "Stop Tween (Dừng Bay Lập Tức)",
     Callback = function()
         StopTween()
-        Fluent:Notify({ Title = "Stop Tween", Content = "Đã hủy toàn bộ Tween!", Duration = 3 })
-    end
+        Rayfield:Notify({Title = "Stop Tween", Content = "Đã hủy toàn bộ Tween!", Duration = 3})
+    end,
 })
 
 --------------------------------------------------------
--- 4. TAB SECRET QUESTS (CHO LV 2810+)
+-- TAB SECRET QUESTS (2810+)
 --------------------------------------------------------
-Tabs.Secret:AddParagraph({ 
-    Title = "Chuỗi Nhiệm Vụ Ẩn (Secret Quest Lv 2810+)", 
-    Content = "Hỗ trợ làm tự động chuỗi nhiệm vụ ẩn mới dành riêng cho Level 2810+." 
-})
+TabSecret:CreateParagraph({Title = "Chuỗi Nhiệm Vụ Ẩn", Content = "Hỗ trợ tự động làm chuỗi nhiệm vụ ẩn cấp độ 2810+."})
 
-Tabs.Secret:AddToggle("AutoSecret2810Toggle", {
-    Title = "Auto Secret Quest (Level 2810+)",
-    Default = false,
+TabSecret:CreateToggle({
+    Name = "Auto Secret Quest (Level 2810+)",
+    CurrentValue = false,
     Callback = function(Value)
         _G.AutoSecretQuest2810 = Value
         if not Value then StopTween() end
-    end
+    end,
 })
 
-Tabs.Secret:AddButton({
-    Title = "Teleport Đến NPC Nhiệm Vụ Ẩn 2810+",
+TabSecret:CreateButton({
+    Name = "Teleport Đến NPC Nhiệm Vụ Ẩn 2810+",
     Callback = function()
         TweenTo(CFrame.new(-12500, 340, -8500))
-    end
+    end,
 })
 
-Tabs.Secret:AddToggle("MirageCheckToggle", {
-    Title = "Dò Tìm Đảo Sương Mù (Mirage Island Finder)",
-    Default = false,
-    Callback = function(Value) _G.MirageCheck = Value end
+TabSecret:CreateToggle({
+    Name = "Dò Tìm Đảo Sương Mù (Mirage Finder)",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.MirageCheck = Value
+    end,
 })
 
 --------------------------------------------------------
--- 5. TAB RANDOM AND RAID
+-- TAB RANDOM & RAID
 --------------------------------------------------------
-Tabs.Raid:AddParagraph({ 
-    Title = "Hệ Thống Random Trái & Đi Raids", 
-    Content = "Tự động mua Trái Ác Quỷ ngẫu nhiên, cất Rương và Auto Farm Raid." 
-})
-
-Tabs.Raid:AddButton({
-    Title = "Random Trái Ác Quỷ Ngay",
+TabRaid:CreateButton({
+    Name = "Random Trái Ác Quỷ Ngay",
     Callback = function()
         pcall(function()
             local res = game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Cousin", "Buy")
-            Fluent:Notify({ Title = "Random Fruit", Content = tostring(res), Duration = 5 })
+            Rayfield:Notify({Title = "Random Fruit", Content = tostring(res), Duration = 5})
         end)
-    end
+    end,
 })
 
-Tabs.Raid:AddToggle("AutoRandomToggle", { Title = "Auto Random Fruit Khi Đủ Thời Gian", Default = false, Callback = function(V) _G.AutoRandomFruit = V end })
-Tabs.Raid:AddToggle("AutoStoreToggle", { Title = "Auto Store Fruit (Tự Động Cất Rương)", Default = false, Callback = function(V) _G.AutoStoreFruit = V end })
-
-Tabs.Raid:AddDropdown("RaidChipSelect", {
-    Title = "Chọn Loại Chip Raid",
-    Values = {"Flame", "Ice", "Quake", "Light", "Dark", "Spider", "Rumble", "Magma", "Buddha", "Sand", "Dough"},
-    Default = "Flame",
-    Callback = function(Value) _G.SelectRaidChip = Value end
+TabRaid:CreateToggle({
+    Name = "Auto Random Fruit Khi Đủ Thời Gian",
+    CurrentValue = false,
+    Callback = function(V) _G.AutoRandomFruit = V end,
 })
 
-Tabs.Raid:AddToggle("AutoBuyChipToggle", { Title = "Auto Buy Chip Raid", Default = false, Callback = function(V) _G.AutoBuyChip = V end })
-Tabs.Raid:AddToggle("AutoStartRaidToggle", { Title = "Auto Start Raid (Bắt Đầu Raid)", Default = false, Callback = function(V) _G.AutoStartRaid = V end })
-Tabs.Raid:AddToggle("AutoFarmRaidToggle", { 
-    Title = "Auto Farm Raid (Bay Xoá Đảo Raid)", 
-    Default = false, 
+TabRaid:CreateToggle({
+    Name = "Auto Store Fruit (Tự Động Cất Rương)",
+    CurrentValue = false,
+    Callback = function(V) _G.AutoStoreFruit = V end,
+})
+
+TabRaid:CreateDropdown({
+    Name = "Chọn Loại Chip Raid",
+    Options = {"Flame", "Ice", "Quake", "Light", "Dark", "Spider", "Rumble", "Magma", "Buddha", "Sand", "Dough"},
+    CurrentOption = "Flame",
+    Callback = function(Value) _G.SelectRaidChip = Value end,
+})
+
+TabRaid:CreateToggle({
+    Name = "Auto Buy Chip Raid",
+    CurrentValue = false,
+    Callback = function(V) _G.AutoBuyChip = V end,
+})
+
+TabRaid:CreateToggle({
+    Name = "Auto Start Raid",
+    CurrentValue = false,
+    Callback = function(V) _G.AutoStartRaid = V end,
+})
+
+TabRaid:CreateToggle({
+    Name = "Auto Farm Raid",
+    CurrentValue = false,
     Callback = function(V) 
         _G.AutoFarmRaid = V 
         if not V then StopTween() end
-    end 
+    end,
 })
 
 -- Loops Random, Store, Raid
@@ -307,49 +278,49 @@ task.spawn(function()
 end)
 
 --------------------------------------------------------
--- 6. TELEPORT VÀ CÁC TAB CÒN LẠI
+-- TAB TELEPORT & DRAGON
 --------------------------------------------------------
-Tabs.Dragon:AddButton({ Title = "Teleport Đến Dragon Dojo", Callback = function() TweenTo(CFrame.new(-11230, 330, -8412)) end })
-Tabs.Dragon:AddButton({ Title = "Teleport Đến Prehistoric Island", Callback = function() TweenTo(CFrame.new(12432, 25, -6412)) end })
+TabDragon:CreateButton({ Name = "Teleport Đến Dragon Dojo", Callback = function() TweenTo(CFrame.new(-11230, 330, -8412)) end })
+TabDragon:CreateButton({ Name = "Teleport Đến Prehistoric Island", Callback = function() TweenTo(CFrame.new(12432, 25, -6412)) end })
 
 local IslandsList = {
     ["Starter Island"] = CFrame.new(1088, 16, 1422),
-    ["Jungle"] = CFrame.new(-1612, 36, 148),
-    ["Pirate Village"] = CFrame.new(-1134, 4, 3840),
-    ["Desert"] = CFrame.new(943, 6, 4329),
-    ["Middle Town"] = CFrame.new(-690, 15, 1582),
-    ["Frozen Village"] = CFrame.new(1147, 27, -1144),
-    ["Marineford"] = CFrame.new(-4812, 20, 4361),
-    ["Skypiea"] = CFrame.new(-4839, 717, -2639),
-    ["Prison"] = CFrame.new(4875, 5, 735),
-    ["Magma Village"] = CFrame.new(-5259, 8, 8503),
-    ["Underwater City"] = CFrame.new(3864, 5, -1926),
-    ["Fountain City"] = CFrame.new(5127, 59, 4105),
-    ["Kingdom of Rose"] = CFrame.new(-456, 73, 2999),
-    ["Green Zone"] = CFrame.new(-2448, 73, -3211),
-    ["Graveyard"] = CFrame.new(-5414, 48, -725),
-    ["Snow Mountain"] = CFrame.new(1385, 454, -5028),
-    ["Hot and Cold"] = CFrame.new(-6127, 15, -5040),
-    ["Cursed Ship"] = CFrame.new(923, 125, 32885),
-    ["Ice Castle"] = CFrame.new(5560, 28, -6283),
-    ["Forgotten Island"] = CFrame.new(-3050, 237, -10148),
-    ["Port Town"] = CFrame.new(-290, 7, 5343),
-    ["Hydra Island"] = CFrame.new(5749, 610, -282),
-    ["Great Tree"] = CFrame.new(2284, 25, -7102),
-    ["Floating Turtle"] = CFrame.new(-13274, 332, -7628),
     ["Castle on the Sea"] = CFrame.new(-5085, 316, -3156),
-    ["Haunted Castle"] = CFrame.new(-9513, 142, 5535),
-    ["Sea of Treats"] = CFrame.new(-2100, 38, -12100)
+    ["Port Town"] = CFrame.new(-290, 7, 5343),
+    ["Haunted Castle"] = CFrame.new(-9513, 142, 5535)
 }
+local IslandNames = {"Starter Island", "Castle on the Sea", "Port Town", "Haunted Castle"}
 
-local IslandNames = {}
-for name, _ in pairs(IslandsList) do table.insert(IslandNames, name) end
+TabTeleport:CreateDropdown({
+    Name = "Chọn Đảo Muốn Đến",
+    Options = IslandNames,
+    CurrentOption = "Starter Island",
+    Callback = function(V) _G.SelectIsland = V end,
+})
 
-Tabs.Teleport:AddDropdown("IslandSelect", { Title = "Chọn Đảo Muốn Đến", Values = IslandNames, Default = "Starter Island", Callback = function(V) _G.SelectIsland = V end })
-Tabs.Teleport:AddButton({ Title = "Bay Đến Đảo (Tween 170)", Callback = function() local pos = IslandsList[_G.SelectIsland] if pos then TweenTo(pos) end end })
+TabTeleport:CreateButton({
+    Name = "Bay Đến Đảo",
+    Callback = function()
+        local pos = IslandsList[_G.SelectIsland]
+        if pos then TweenTo(pos) end
+    end,
+})
 
-Tabs.Stats:AddDropdown("StatSelect", { Title = "Chọn Chỉ Số Cộng Điểm", Values = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"}, Default = "Melee", Callback = function(V) _G.StatTarget = V end })
-Tabs.Stats:AddToggle("AutoStatsToggle", { Title = "Bật Auto Stats", Default = false, Callback = function(V) _G.AutoStats = V end })
+--------------------------------------------------------
+-- TAB STATS & VISUALS
+--------------------------------------------------------
+TabStats:CreateDropdown({
+    Name = "Chọn Chỉ Số Cộng Điểm",
+    Options = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"},
+    CurrentOption = "Melee",
+    Callback = function(V) _G.StatTarget = V end,
+})
+
+TabStats:CreateToggle({
+    Name = "Bật Auto Stats",
+    CurrentValue = false,
+    Callback = function(V) _G.AutoStats = V end,
+})
 
 task.spawn(function()
     while task.wait(0.5) do
@@ -359,7 +330,11 @@ task.spawn(function()
     end
 end)
 
-Tabs.Visuals:AddToggle("ESPPlayerToggle", { Title = "ESP Player (Nhìn Xuyên Tường)", Default = false, Callback = function(V) _G.ESPPlayer = V end })
+TabVisuals:CreateToggle({
+    Name = "ESP Player (Nhìn Xuyên Tường)",
+    CurrentValue = false,
+    Callback = function(V) _G.ESPPlayer = V end,
+})
 
 game:GetService("RunService").RenderStepped:Connect(function()
     if _G.ESPPlayer then
@@ -384,36 +359,32 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
-Tabs.Weapons:AddToggle("AutoYamaToggle", { Title = "Auto Farm & Pull Yama Sword", Default = false, Callback = function(V) _G.AutoYama = V end })
-Tabs.Weapons:AddToggle("AutoTushitaToggle", { Title = "Auto Get Tushita Sword", Default = false, Callback = function(V) _G.AutoTushita = V end })
-Tabs.Weapons:AddToggle("AutoCDKToggle", { Title = "Auto Quest Cursed Dual Katana (CDK)", Default = false, Callback = function(V) _G.AutoCDK = V end })
-Tabs.Weapons:AddToggle("AutoSoulGuitarToggle", { Title = "Auto Craft Soul Guitar", Default = false, Callback = function(V) _G.AutoSoulGuitar = V end })
+--------------------------------------------------------
+-- TAB WEAPONS, BOSS, ELITE
+--------------------------------------------------------
+TabWeapons:CreateToggle({ Name = "Auto Farm & Pull Yama Sword", CurrentValue = false, Callback = function(V) _G.AutoYama = V end })
+TabWeapons:CreateToggle({ Name = "Auto Get Tushita Sword", CurrentValue = false, Callback = function(V) _G.AutoTushita = V end })
+TabWeapons:CreateToggle({ Name = "Auto Quest CDK", CurrentValue = false, Callback = function(V) _G.AutoCDK = V end })
+TabWeapons:CreateToggle({ Name = "Auto Craft Soul Guitar", CurrentValue = false, Callback = function(V) _G.AutoSoulGuitar = V end })
 
-Tabs.Boss:AddToggle("AutoFarmBossToggle", { Title = "Auto Farm All Bosses", Default = false, Callback = function(V) _G.AutoFarmBoss = V if not V then StopTween() end end })
-Tabs.Elite:AddToggle("AutoEliteToggle", { Title = "Auto Farm Elite Boss", Default = false, Callback = function(V) _G.AutoElite = V if not V then StopTween() end end })
+TabBoss:CreateToggle({ Name = "Auto Farm All Bosses", CurrentValue = false, Callback = function(V) _G.AutoFarmBoss = V if not V then StopTween() end end })
+TabElite:CreateToggle({ Name = "Auto Farm Elite Boss", CurrentValue = false, Callback = function(V) _G.AutoElite = V if not V then StopTween() end end })
 
 --------------------------------------------------------
--- 7. BACKEND FARM, ATTACK AURA & NOCLIP
+-- BACKEND FARM & ATTACK AURA
 --------------------------------------------------------
 local function EquipWeapon()
     pcall(function()
         local char = LocalPlayer.Character
         if not char then return end
         for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                if _G.SelectWeapon == "Melee" and tool.ToolTip == "Melee" then
-                    char.Humanoid:EquipTool(tool)
-                elseif _G.SelectWeapon == "Sword" and tool.ToolTip == "Sword" then
-                    char.Humanoid:EquipTool(tool)
-                elseif _G.SelectWeapon == "Blox Fruit" and tool.ToolTip == "Blox Fruit" then
-                    char.Humanoid:EquipTool(tool)
-                end
+            if tool:IsA("Tool") and tool.ToolTip == _G.SelectWeapon then
+                char.Humanoid:EquipTool(tool)
             end
         end
     end)
 end
 
--- ATTACK AURA & FAST ATTACK
 task.spawn(function()
     while task.wait(0.01) do
         if _G.AutoFarmLv or _G.AutoElite or _G.AutoFarmBoss or _G.AutoFarmRaid or _G.AutoSecretQuest2810 then
@@ -454,28 +425,14 @@ local function GetPlayerLevel()
     return lvl
 end
 
--- AUTO FARM LEVEL & SECRET QUESTS (17 STUDS TRÊN ĐẦU QUÁI)
 task.spawn(function()
     while task.wait(0.05) do
         if (_G.AutoFarmLv or _G.AutoFarmBoss or _G.AutoFarmRaid or _G.AutoSecretQuest2810) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             pcall(function()
                 local hrp = LocalPlayer.Character.HumanoidRootPart
-                local pLevel = GetPlayerLevel()
                 local targetMob = nil
                 local shortestDistance = math.huge
 
                 if workspace:FindFirstChild("Enemies") then
                     for _, enemy in pairs(workspace.Enemies:GetChildren()) do
-                        if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
-                            local enemyName = enemy.Name
-                            local skip = false
-                            
-                            if pLevel >= 2810 and _G.AutoSecretQuest2810 then
-                                -- Ưu tiên quái Secret Quest 2810+
-                            elseif pLevel > 2000 and not _G.AutoFarmBoss and not _G.AutoFarmRaid then
-                                if string.find(enemyName, "Bandit") or string.find(enemyName, "Monkey") or string.find(enemyName, "Pirate") or string.find(enemyName, "Desert") or string.find(enemyName, "Snow") then
-                                    skip = true
-                                end
-                            end
-
- 
+                        if enemy:FindFirstChild("Humanoid") and
