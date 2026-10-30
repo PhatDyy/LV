@@ -1,80 +1,275 @@
--- BLOX FRUITS STYLE FULL GUI
--- Dùng trong Roblox Studio
+--========================================--
+--          LOUIS VUITTON HUB             --
+--              Version 1.0               --
+--========================================--
 
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "BloxFruitsGUI"
+ScreenGui.Name = "LouisVuittonHub"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
 
+-- Main Frame
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 400, 0, 350)
-Main.Position = UDim2.new(0.5, -200, 0.5, -175)
-Main.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+Main.Name = "Main"
+Main.Size = UDim2.new(0, 550, 0, 350)
+Main.Position = UDim2.new(0.5, -275, 0.5, -175)
+Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Main.BorderSizePixel = 0
 Main.Parent = ScreenGui
 
 local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 12)
 Corner.Parent = Main
 
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(212, 175, 55)
+Stroke.Thickness = 2
+Stroke.Parent = Main
+
+-- Header
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 45)
+Header.BackgroundColor3 = Color3.fromRGB(30, 25, 15)
+Header.BorderSizePixel = 0
+Header.Parent = Main
+
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 45)
-Title.BackgroundColor3 = Color3.fromRGB(120, 40, 220)
-Title.Text = "BLOX FRUITS | FULL GUI"
-Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "♛ LOUIS VUITTON HUB"
+Title.TextColor3 = Color3.fromRGB(255, 215, 80)
 Title.TextSize = 20
 Title.Font = Enum.Font.GothamBold
-Title.Parent = Main
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
 
-local function CreateButton(name, position, callback)
+-- Close Button
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 35, 0, 30)
+Close.Position = UDim2.new(1, -42, 0, 7)
+Close.Text = "X"
+Close.TextColor3 = Color3.new(1,1,1)
+Close.BackgroundColor3 = Color3.fromRGB(150, 30, 30)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 16
+Close.Parent = Header
+
+-- Minimize Button
+local Minimize = Instance.new("TextButton")
+Minimize.Size = UDim2.new(0, 35, 0, 30)
+Minimize.Position = UDim2.new(1, -82, 0, 7)
+Minimize.Text = "-"
+Minimize.TextColor3 = Color3.new(1,1,1)
+Minimize.BackgroundColor3 = Color3.fromRGB(90, 75, 30)
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 20
+Minimize.Parent = Header
+
+-- Sidebar
+local Sidebar = Instance.new("Frame")
+Sidebar.Position = UDim2.new(0, 0, 0, 45)
+Sidebar.Size = UDim2.new(0, 135, 1, -45)
+Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = Main
+
+local Content = Instance.new("Frame")
+Content.Position = UDim2.new(0, 145, 0, 55)
+Content.Size = UDim2.new(1, -155, 1, -65)
+Content.BackgroundTransparency = 1
+Content.Parent = Main
+
+-- Content Text
+local Info = Instance.new("TextLabel")
+Info.Size = UDim2.new(1, -20, 0, 70)
+Info.Position = UDim2.new(0, 10, 0, 10)
+Info.BackgroundTransparency = 1
+Info.Text = "Welcome to Louis Vuitton Hub!"
+Info.TextColor3 = Color3.fromRGB(255, 215, 80)
+Info.Font = Enum.Font.GothamBold
+Info.TextSize = 20
+Info.Parent = Content
+
+local Description = Instance.new("TextLabel")
+Description.Size = UDim2.new(1, -20, 0, 40)
+Description.Position = UDim2.new(0, 10, 0, 65)
+Description.BackgroundTransparency = 1
+Description.Text = "Premium Roblox Interface"
+Description.TextColor3 = Color3.fromRGB(200, 200, 200)
+Description.Font = Enum.Font.Gotham
+Description.TextSize = 14
+Description.Parent = Content
+
+-- Page system
+local Pages = {}
+
+local function CreatePage(name)
+    local Page = Instance.new("Frame")
+    Page.Name = name
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = false
+    Page.Parent = Content
+    Pages[name] = Page
+    return Page
+end
+
+local function CreateButton(parent, text, callback)
     local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0, 175, 0, 40)
-    Button.Position = position
-    Button.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-    Button.TextColor3 = Color3.new(1, 1, 1)
-    Button.Text = name .. " : OFF"
-    Button.TextSize = 14
+    Button.Size = UDim2.new(1, -20, 0, 38)
+    Button.BackgroundColor3 = Color3.fromRGB(45, 38, 20)
+    Button.TextColor3 = Color3.fromRGB(255, 220, 100)
+    Button.Text = text
     Button.Font = Enum.Font.GothamBold
-    Button.Parent = Main
+    Button.TextSize = 14
+    Button.Parent = parent
 
-    Instance.new("UICorner", Button)
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 7)
+    Corner.Parent = Button
 
-    local enabled = false
+    Button.MouseButton1Click:Connect(callback)
+    return Button
+end
+
+local function ShowPage(name)
+    for _, page in pairs(Pages) do
+        page.Visible = false
+    end
+    Pages[name].Visible = true
+end
+
+local MainPage = CreatePage("Main")
+local FarmPage = CreatePage("Farm")
+local CombatPage = CreatePage("Combat")
+local TeleportPage = CreatePage("Teleport")
+local SettingsPage = CreatePage("Settings")
+
+-- Main Page
+local Welcome = Instance.new("TextLabel")
+Welcome.Size = UDim2.new(1, 0, 0, 100)
+Welcome.BackgroundTransparency = 1
+Welcome.Text = "♛ LOUIS VUITTON HUB\nWelcome, " .. Player.Name
+Welcome.TextColor3 = Color3.fromRGB(255, 215, 80)
+Welcome.Font = Enum.Font.GothamBold
+Welcome.TextSize = 20
+Welcome.Parent = MainPage
+
+-- Farm Page
+CreateButton(FarmPage, "Farm Settings", function()
+    print("Farm settings selected")
+end).Position = UDim2.new(0, 10, 0, 10)
+
+-- Combat Page
+CreateButton(CombatPage, "Combat Settings", function()
+    print("Combat settings selected")
+end).Position = UDim2.new(0, 10, 0, 10)
+
+-- Teleport Page
+CreateButton(TeleportPage, "Teleport Settings", function()
+    print("Teleport settings selected")
+end).Position = UDim2.new(0, 10, 0, 10)
+
+-- Settings Page
+CreateButton(SettingsPage, "Interface Settings", function()
+    print("Interface settings selected")
+end).Position = UDim2.new(0, 10, 0, 10)
+
+-- Tabs
+local Tabs = {
+    "Main",
+    "Farm",
+    "Combat",
+    "Teleport",
+    "Settings"
+}
+
+for i, name in ipairs(Tabs) do
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -12, 0, 38)
+    Button.Position = UDim2.new(0, 6, 0, (i-1)*43 + 10)
+    Button.BackgroundColor3 = Color3.fromRGB(40, 35, 25)
+    Button.Text = name
+    Button.TextColor3 = Color3.fromRGB(255, 215, 80)
+    Button.Font = Enum.Font.GothamBold
+    Button.TextSize = 14
+    Button.Parent = Sidebar
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Button
 
     Button.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        Button.Text = name .. (enabled and " : ON" or " : OFF")
-        Button.BackgroundColor3 = enabled
-            and Color3.fromRGB(30, 150, 90)
-            or Color3.fromRGB(45, 45, 65)
-
-        if callback then
-            callback(enabled)
-        end
+        ShowPage(name)
     end)
 end
 
-CreateButton("Auto Farm", UDim2.new(0, 15, 0, 65))
-CreateButton("Auto Quest", UDim2.new(0, 210, 0, 65))
-CreateButton("Boss Tracker", UDim2.new(0, 15, 0, 115))
-CreateButton("Fruit Tracker", UDim2.new(0, 210, 0, 115))
-CreateButton("Player ESP", UDim2.new(0, 15, 0, 165))
-CreateButton("Teleport", UDim2.new(0, 210, 0, 165))
-CreateButton("Auto Raid", UDim2.new(0, 15, 0, 215))
-CreateButton("Auto Haki", UDim2.new(0, 210, 0, 215))
+ShowPage("Main")
 
-local Close = Instance.new("TextButton")
-Close.Size = UDim2.new(0, 30, 0, 30)
-Close.Position = UDim2.new(1, -35, 0, 7)
-Close.Text = "X"
-Close.TextColor3 = Color3.new(1, 1, 1)
-Close.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-Close.Parent = Main
+-- Minimize
+local minimized = false
 
+Minimize.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    Sidebar.Visible = not minimized
+    Content.Visible = not minimized
+
+    Main:TweenSize(
+        minimized and UDim2.new(0, 550, 0, 45)
+        or UDim2.new(0, 550, 0, 350),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.25,
+        true
+    )
+end)
+
+-- Close
 Close.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-print("Blox Fruits GUI Loaded!")
+-- Drag
+local dragging = false
+local dragStart
+local startPos
+
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+print("Louis Vuitton Hub Loaded!")
