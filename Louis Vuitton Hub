@@ -1,209 +1,80 @@
--- ======================================================
--- LOUIS VUITTON HUB - MOBILE FIXED UI (HIỆN MENU GIỮA MÀN HÌNH)
--- ======================================================
+-- BLOX FRUITS STYLE FULL GUI
+-- Dùng trong Roblox Studio
 
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-
--- Xóa GUI cũ nếu có
-if PlayerGui:FindFirstChild("LVHubMobileGui") then
-    PlayerGui.LVHubMobileGui:Destroy()
-end
+local player = Players.LocalPlayer
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "LVHubMobileGui"
-ScreenGui.Parent = PlayerGui
+ScreenGui.Name = "BloxFruitsGUI"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.DisplayOrder = 99999 -- Đảm bảo hiển thị lên trên cùng
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Khung Menu chính (Cố định ở chính giữa màn hình điện thoại)
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 380, 0, 280)
-MainFrame.Position = UDim2.new(0.5, -190, 0.5, -140)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 400, 0, 350)
+Main.Position = UDim2.new(0.5, -200, 0.5, -175)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+Main.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = MainFrame
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 12)
+Corner.Parent = Main
 
--- Viền vàng sang trọng chuẩn Louis Vuitton
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(212, 175, 55)
-UIStroke.Thickness = 2
-UIStroke.Parent = MainFrame
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundColor3 = Color3.fromRGB(120, 40, 220)
+Title.Text = "BLOX FRUITS | FULL GUI"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.TextSize = 20
+Title.Font = Enum.Font.GothamBold
+Title.Parent = Main
 
--- Thanh Tiêu Đề
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, 0, 0, 45)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-TitleLabel.Text = "⚡ LOUIS VUITTON HUB | BLOX FRUITS ⚡"
-TitleLabel.TextColor3 = Color3.fromRGB(212, 175, 55)
-TitleLabel.TextSize = 14
-TitleLabel.Font = Enum.Font.FredokaOne
-TitleLabel.Parent = MainFrame
+local function CreateButton(name, position, callback)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0, 175, 0, 40)
+    Button.Position = position
+    Button.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    Button.TextColor3 = Color3.new(1, 1, 1)
+    Button.Text = name .. " : OFF"
+    Button.TextSize = 14
+    Button.Font = Enum.Font.GothamBold
+    Button.Parent = Main
 
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = Instance.new("UICorner").CornerRadius
-TitleCorner.Parent = TitleLabel
+    Instance.new("UICorner", Button)
 
--- Nút Bật/Tắt Auto Farm Level
-local FarmToggleBtn = Instance.new("TextButton")
-FarmToggleBtn.Size = UDim2.new(0, 340, 0, 50)
-FarmToggleBtn.Position = UDim2.new(0.5, -170, 0, 65)
-FarmToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-FarmToggleBtn.Text = "Auto Farm Level: OFF"
-FarmToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-FarmToggleBtn.TextSize, FarmToggleBtn.Font = 15, Enum.Font.GothamBold
-FarmToggleBtn.Parent = MainFrame
+    local enabled = false
 
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = FarmToggleBtn
+    Button.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        Button.Text = name .. (enabled and " : ON" or " : OFF")
+        Button.BackgroundColor3 = enabled
+            and Color3.fromRGB(30, 150, 90)
+            or Color3.fromRGB(45, 45, 65)
 
-local BtnStroke = Instance.new("UIStroke")
-BtnStroke.Color = Color3.fromRGB(212, 175, 55)
-BtnStroke.Thickness = 1
-BtnStroke.Parent = FarmToggleBtn
-
--- Biến cấu hình
-_G.AutoFarmLv = false
-_G.TweenSpeed = 170
-_G.FarmDistance = 17
-
-FarmToggleBtn.MouseButton1Click:Connect(function()
-    _G.AutoFarmLv = not _G.AutoFarmLv
-    if _G.AutoFarmLv then
-        FarmToggleBtn.Text = "Auto Farm Level: ON (Đang Chạy)"
-        FarmToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    else
-        FarmToggleBtn.Text = "Auto Farm Level: OFF"
-        FarmToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    end
-end)
-
--- Nút Tròn Nổi "LV" ở góc màn hình để Ẩn/Hiện Menu nhanh
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 55, 0, 55)
-ToggleButton.Position = UDim2.new(0.02, 0, 0.25, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-ToggleButton.Text = "LV"
-ToggleButton.TextColor3 = Color3.fromRGB(212, 175, 55)
-ToggleButton.TextSize = 22
-ToggleButton.Font = Enum.Font.FredokaOne
-ToggleButton.Active = true
-ToggleButton.Draggable = true
-ToggleButton.Parent = ScreenGui
-
-local LogoCorner = Instance.new("UICorner")
-LogoCorner.CornerRadius = UDim.new(1, 0)
-LogoCorner.Parent = ToggleButton
-
-local LogoStroke = Instance.new("UIStroke")
-LogoStroke.Color = Color3.fromRGB(212, 175, 55)
-LogoStroke.Thickness = 2.5
-LogoStroke.Parent = ToggleButton
-
--- Bấm vào nút LV để ẩn/hiện bảng menu
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
-
--- Backend Auto Farm (Tự động bay và đánh quái)
-local TweenService = game:GetService("TweenService")
-local currentTween = nil
-
-local function EquipWeapon()
-    pcall(function()
-        local char = LocalPlayer.Character
-        if not char then return end
-        for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
-            if tool:IsA("Tool") and tool.ToolTip == "Melee" then
-                char.Humanoid:EquipTool(tool)
-            end
+        if callback then
+            callback(enabled)
         end
     end)
 end
 
-task.spawn(function()
-    while task.wait(0.01) do
-        if _G.AutoFarmLv then
-            pcall(function()
-                EquipWeapon()
-                local char = LocalPlayer.Character
-                if char and char:FindFirstChildOfClass("Tool") then
-                    char:FindFirstChildOfClass("Tool"):Activate()
-                end
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local myPos = char.HumanoidRootPart.Position
-                    if workspace:FindFirstChild("Enemies") then
-                        for _, enemy in pairs(workspace.Enemies:GetChildren()) do
-                            if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
-                                if (enemy.HumanoidRootPart.Position - myPos).Magnitude <= 45 then
-                                    game:GetService("VirtualUser"):Button1Down(Vector2.new(0,0))
-                                end
-                            end
-                        end
-                    end
-                end
-            end)
-        end
-    end
+CreateButton("Auto Farm", UDim2.new(0, 15, 0, 65))
+CreateButton("Auto Quest", UDim2.new(0, 210, 0, 65))
+CreateButton("Boss Tracker", UDim2.new(0, 15, 0, 115))
+CreateButton("Fruit Tracker", UDim2.new(0, 210, 0, 115))
+CreateButton("Player ESP", UDim2.new(0, 15, 0, 165))
+CreateButton("Teleport", UDim2.new(0, 210, 0, 165))
+CreateButton("Auto Raid", UDim2.new(0, 15, 0, 215))
+CreateButton("Auto Haki", UDim2.new(0, 210, 0, 215))
+
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 30, 0, 30)
+Close.Position = UDim2.new(1, -35, 0, 7)
+Close.Text = "X"
+Close.TextColor3 = Color3.new(1, 1, 1)
+Close.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+Close.Parent = Main
+
+Close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
 end)
 
-local function TweenTo(targetCFrame)
-    pcall(function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            local hrp = LocalPlayer.Character.HumanoidRootPart
-            local humanoid = LocalPlayer.Character.Humanoid
-            humanoid.PlatformStand = true
-            
-            local distance = (hrp.Position - targetCFrame.Position).Magnitude
-            local tweenTime = distance / _G.TweenSpeed
-            local tweenInfo = TweenInfo.new(tweenTime, Enum.EasingStyle.Linear)
-            
-            if currentTween then currentTween:Cancel() end
-            currentTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
-            currentTween:Play()
-            
-            currentTween.Completed:Connect(function()
-                humanoid.PlatformStand = false
-            end)
-        end
-    end)
-end
-
-task.spawn(function()
-    while task.wait(0.05) do
-        if _G.AutoFarmLv and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            pcall(function()
-                local hrp = LocalPlayer.Character.HumanoidRootPart
-                local targetMob = nil
-                local shortestDistance = math.huge
-
-                if workspace:FindFirstChild("Enemies") then
-                    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
-                        if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
-                            local dist = (enemy.HumanoidRootPart.Position - hrp.Position).Magnitude
-                            if dist < shortestDistance then
-                                shortestDistance = dist
-                                targetMob = enemy
-                            end
-                        end
-                    end
-                end
-
-                if targetMob and targetMob:FindFirstChild("HumanoidRootPart") then
-                    local targetCFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, _G.FarmDistance, 0)
-                    TweenTo(targetCFrame)
-                end
-            end)
-        end
-    end
-end)
-
-print("Louis Vuitton Hub Mobile: Đã tải menu thành công giữa màn hình!")
+print("Blox Fruits GUI Loaded!")
